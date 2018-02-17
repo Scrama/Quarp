@@ -27,6 +27,7 @@ using System.Drawing;
 using System.IO;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using Quarp.HUD;
 
 // screen.h
 // gl_screen.c
@@ -216,7 +217,8 @@ namespace Quarp
 
                 if (_DrawDialog)
                 {
-                    Sbar.Draw();
+                    Hud.Draw();
+                    //Sbar.Draw();
                     Drawer.FadeScreen();
                     DrawNotifyString();
                     _CopyEverything = true;
@@ -224,7 +226,8 @@ namespace Quarp
                 else if (_DrawLoading)
                 {
                     DrawLoading();
-                    Sbar.Draw();
+                    Hud.Draw();
+                    //Sbar.Draw();
                 }
                 else if (Client.cl.intermission == 1 && Key.Destination == keydest_t.key_game)
                 {
@@ -248,7 +251,8 @@ namespace Quarp
                     DrawTurtle();
                     DrawPause();
                     CheckDrawCenterString();
-                    Sbar.Draw();
+                    Hud.Draw();
+                    //Sbar.Draw();
                     DrawConsole();
                     Menu.Draw();
                 }

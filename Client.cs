@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Linq;
 using OpenTK;
 
 // client.h
@@ -411,6 +412,11 @@ namespace Quarp
         public bool HasItems(int item)
         {
             return (this.items & item) == item;
+        }
+
+        public bool HasAny(int[] itemCollection)
+        {
+            return itemCollection.Any(item => (items & item) == item);
         }
 
         public void Clear()

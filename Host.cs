@@ -238,6 +238,7 @@ namespace Quarp
                 Sound.Init();
 		        CDAudio.Init();
 		        Sbar.Init();
+	            HUD.Hud.Init();
 		        Client.Init();
 	        }
 

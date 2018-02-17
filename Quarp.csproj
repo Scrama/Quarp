@@ -89,6 +89,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
@@ -112,6 +113,10 @@
     <Compile Include="Draw.cs" />
     <Compile Include="Host.cs" />
     <Compile Include="HostCmd.cs" />
+    <Compile Include="HUD\Factory.cs" />
+    <Compile Include="HUD\Hud.cs" />
+    <Compile Include="HUD\HudDto.cs" />
+    <Compile Include="HUD\HudItem.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Keys.cs" />
     <Compile Include="MainForm.cs" />
