@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using System.Text;
 using OpenTK;
 
-namespace SharpQuake
+namespace Quarp
 {
     static class Anorms
     {

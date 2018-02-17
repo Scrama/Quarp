@@ -27,7 +27,7 @@ using System.IO;
 
 // snd_mem.c
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Sound
     {

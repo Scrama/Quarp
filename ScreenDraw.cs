@@ -28,7 +28,7 @@ using OpenTK.Graphics.OpenGL;
 
 // gl_draw.c
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Scr
     {

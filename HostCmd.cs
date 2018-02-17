@@ -28,7 +28,7 @@ using System.Globalization;
 
 // host_cmd.c
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Host
     {

@@ -27,7 +27,7 @@ using System.IO;
 
 // gl_mesh.c
 
-namespace SharpQuake
+namespace Quarp
 {
     static class Mesh
     {

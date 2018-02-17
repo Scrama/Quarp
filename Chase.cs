@@ -27,7 +27,7 @@ using OpenTK;
 
 // chase.c -- chase camera code
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// Chase_functions

@@ -28,7 +28,7 @@ using OpenTK;
 // modelgen.h
 // spritegn.h
 
-namespace SharpQuake
+namespace Quarp
 {
     // d*_t structures are on-disk representations
     // m*_t structures are in-memory

@@ -26,7 +26,7 @@ using System.Text;
 
 // cdaudio.h
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// CDAudio_functions

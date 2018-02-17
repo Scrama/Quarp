@@ -29,7 +29,7 @@ using System.Text;
 // the status bar is only redrawn if something has changed, but if anything
 // does, the entire thing will be redrawn for the next vid.numpages frames.
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// Sbar_functions
@@ -245,15 +245,15 @@ namespace SharpQuake
             if (Scr.ConCurrent == vid.height)
                 return;		// console is full screen
 
-            if (_Updates >= vid.numpages)
-                return;
+            //if (_Updates >= vid.numpages)
+            //    return;
 
             Scr.CopyEverithing = true;
 
             _Updates++;
 
-            if (Sbar.Lines > 0 && vid.width > 320)
-                Drawer.TileClear(0, vid.height - Sbar.Lines, vid.width, Sbar.Lines);
+            //if (Sbar.Lines > 0 && vid.width > 320)
+            //    Drawer.TileClear(0, vid.height - Sbar.Lines, vid.width, Sbar.Lines);
 
             if (Sbar.Lines > 24)
             {
@@ -271,7 +271,7 @@ namespace SharpQuake
             }
             else if (Sbar.Lines > 0)
             {
-                DrawPic(0, 0, _SBar);
+                //DrawPic(0, 0, _SBar);
 
                 // keys (hipnotic only)
                 //MED 01/04/97 moved keys here so they would not be overwritten
@@ -435,15 +435,15 @@ namespace SharpQuake
             int flashon;
 
             client_state_t cl = Client.cl;
-            if (Common.GameKind == GameKind.Rogue)
-            {
-                if (cl.stats[QStats.STAT_ACTIVEWEAPON] >= QItems.RIT_LAVA_NAILGUN)
-                    DrawPic(0, -24, _RInvBar[0]);
-                else
-                    DrawPic(0, -24, _RInvBar[1]);
-            }
-            else
-                DrawPic(0, -24, _IBar);
+            //if (Common.GameKind == GameKind.Rogue)
+            //{
+            //    if (cl.stats[QStats.STAT_ACTIVEWEAPON] >= QItems.RIT_LAVA_NAILGUN)
+            //        DrawPic(0, -24, _RInvBar[0]);
+            //    else
+            //        DrawPic(0, -24, _RInvBar[1]);
+            //}
+            //else
+            //    DrawPic(0, -24, _IBar);
 
             // weapons
             for (int i = 0; i < 7; i++)

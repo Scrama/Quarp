@@ -27,7 +27,7 @@ using System.Text;
 
 // cmd.h -- Command buffer and command execution
 
-namespace SharpQuake
+namespace Quarp
 {
     delegate void xcommand_t(); // typedef void (*xcommand_t) (void);
 

@@ -28,7 +28,7 @@ using OpenTK;
 
 // client.h
 
-namespace SharpQuake
+namespace Quarp
 {
     static partial class Client
     {

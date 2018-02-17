@@ -27,7 +27,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace SharpQuake
+namespace Quarp
 {
     class CDAudioWinController : ICDAudioController
     {

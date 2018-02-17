@@ -28,7 +28,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace SharpQuake
+namespace Quarp
 {
     static class Net
     {

@@ -26,7 +26,7 @@ using System.Text;
 using OpenTK.Audio;
 using OpenTK.Audio.OpenAL;
 
-namespace SharpQuake
+namespace Quarp
 {
     class OpenALController : ISoundController
     {

@@ -26,7 +26,7 @@ using OpenTK;
 // mathlib.h
 // mathlib.c
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// Quake math functions
@@ -126,6 +126,20 @@ namespace SharpQuake
             c.x = a.x - b.x;
             c.y = a.y - b.y;
             c.z = a.z - b.z;
+        }
+
+        public static void VectorSubtract(Vector3 a, Vector3 b, out Vector3 c)
+        {
+            c.X = a.X - b.X;
+            c.Y = a.Y - b.Y;
+            c.Z = a.Z - b.Z;
+        }
+
+        public static void VectorSubtract(ref byte[] a, ref byte[] b, out v3f c)
+        {
+            c.x = a[0] - b[0];
+            c.y = a[1] - b[1];
+            c.z = a[2] - b[2];
         }
 
         public static void Clamp(ref v3f src, ref Vector3 min, ref Vector3 max, out v3f dest)
@@ -341,7 +355,8 @@ namespace SharpQuake
 
         public static void RotatePointAroundVector(out Vector3 dst, ref Vector3 dir, ref Vector3 point, float degrees)
         {
-            Matrix4 m = Matrix4.CreateFromAxisAngle(dir, (float)(degrees * Math.PI / 180.0));
+            //Matrix4 m = Matrix4.CreateFromAxisAngle(dir, (float)(degrees * Math.PI / 180.0));
+            Quaternion m = Quaternion.FromAxisAngle(dir, (float) (degrees * Math.PI / 180.0));
             Vector3.Transform(ref point, ref m, out dst);
         }
 

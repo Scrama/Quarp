@@ -29,7 +29,7 @@ using System.Text;
 
 // Used only to emulate Chache_xxx functions
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// Cache_functions

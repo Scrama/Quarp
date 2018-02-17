@@ -32,7 +32,7 @@ using OpenTK;
 // models are the only shared resource between a client and server running
 // on the same machine.
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// Mod_functions

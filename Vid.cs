@@ -30,7 +30,7 @@ using OpenTK.Graphics.OpenGL;
 
 // vid.h -- video driver defs
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// Vid_functions

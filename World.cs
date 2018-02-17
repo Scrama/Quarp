@@ -27,7 +27,7 @@ using OpenTK;
 
 // world.h
 
-namespace SharpQuake
+namespace Quarp
 {
     struct plane_t
     {

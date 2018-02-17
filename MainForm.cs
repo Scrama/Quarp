@@ -27,7 +27,7 @@ using OpenTK.Graphics;
 using OpenTK.Input;
 
 
-namespace SharpQuake
+namespace Quarp
 {
     public class MainForm : GameWindow
     {
@@ -255,7 +255,7 @@ namespace SharpQuake
             }
         }
 
-        static void HandleException(Exception ex)
+        /*static void HandleException(Exception ex)
         {
             DumpError(ex);
             
@@ -265,7 +265,7 @@ namespace SharpQuake
             Cursor.Show();
             MessageBox.Show(ex.Message);
             SafeShutdown();
-        }
+        }*/
 
         [STAThread]
         static int Main(string[] args)

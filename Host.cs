@@ -28,7 +28,7 @@ using OpenTK;
 
 // host.c
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// Host_functions

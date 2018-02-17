@@ -36,7 +36,7 @@ using OpenTK.Graphics;
 // when crossing a water boudnary.
 
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// V_functions

@@ -26,7 +26,7 @@ using System.Text;
 
 // protocol.h -- communications protocols
 
-namespace SharpQuake
+namespace Quarp
 {
     static class Protocol
     {

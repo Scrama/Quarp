@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// W_functions

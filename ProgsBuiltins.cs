@@ -27,7 +27,7 @@ using OpenTK;
 
 // pr_cmds.c
 
-namespace SharpQuake
+namespace Quarp
 {
     static class QBuiltins
     {

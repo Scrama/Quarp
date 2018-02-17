@@ -28,7 +28,7 @@ using OpenTK.Graphics.OpenGL;
 
 // gr_rlights.c
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Render
     {
@@ -269,7 +269,7 @@ namespace SharpQuake
                 return;
             }
 
-            GL.Begin(BeginMode.TriangleFan);
+            GL.Begin(PrimitiveType.TriangleFan);
             GL.Color3(0.2f, 0.1f, 0);
             v = light.origin - Render.ViewPn * rad;
             GL.Vertex3(v);

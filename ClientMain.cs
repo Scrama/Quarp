@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using System.Text;
 using OpenTK;
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Client
     {
@@ -335,6 +335,9 @@ namespace SharpQuake
                 if (ent.msgtime != cl.mtime[0])
                 {
                     ent.model = null;
+                    ent.FrameStartTime = 0;
+                    ent.TranslateStartTime = 0;
+                    ent.RotateStartTime = 0;
                     continue;
                 }
 
@@ -355,6 +358,15 @@ namespace SharpQuake
                     if (Math.Abs(delta.X) > 100 || Math.Abs(delta.Y) > 100 || Math.Abs(delta.Z) > 100)
                         f = 1; // assume a teleportation, not a motion
 
+                    // fenix@io.com: model transform interpolation
+                    // interpolation should be reset in the event of a large delta
+                    if (f >= 1)
+                    {
+                        ent.FrameStartTime = 0;
+                        ent.TranslateStartTime = 0;
+                        ent.RotateStartTime = 0;
+                    }
+                    
                     // interpolate the origin and angles
                     ent.origin = ent.msg_origins[1] + f * delta;
                     Vector3 angleDelta = ent.msg_angles[0] - ent.msg_angles[1];

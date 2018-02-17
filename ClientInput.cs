@@ -26,7 +26,7 @@ using System.Text;
 
 // cl_input.c
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Client
     {

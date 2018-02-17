@@ -29,7 +29,7 @@ using OpenTK;
 
 // quakedef.h
 
-namespace SharpQuake
+namespace Quarp
 {
     static class QDef
     {

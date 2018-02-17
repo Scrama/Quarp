@@ -27,7 +27,7 @@ using OpenTK;
 
 // sv_move.c
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Server
     {

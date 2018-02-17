@@ -28,7 +28,7 @@ using OpenTK;
 
 // sound.h -- client sound i/o functions
 
-namespace SharpQuake
+namespace Quarp
 {
     // snd_started == Sound._Controller.IsInitialized
     // snd_initialized == Sound._IsInitialized

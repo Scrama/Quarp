@@ -28,7 +28,7 @@ using OpenTK.Graphics.OpenGL;
 
 // gl_warp.c
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Render
     {
@@ -267,7 +267,7 @@ namespace SharpQuake
         {
             for (glpoly_t p = fa.polys; p != null; p = p.next)
             {
-                GL.Begin(BeginMode.Polygon);
+                GL.Begin(PrimitiveType.Polygon);
                 for (int i = 0; i < p.numverts; i++)
                 {
                     float[] v = p.verts[i];
@@ -294,7 +294,7 @@ namespace SharpQuake
         {
             for (glpoly_t p = fa.polys; p != null; p = p.next)
             {
-                GL.Begin(BeginMode.Polygon);
+                GL.Begin(PrimitiveType.Polygon);
                 for (int i = 0; i < p.numverts; i++)
                 {
                     float[] v = p.verts[i];

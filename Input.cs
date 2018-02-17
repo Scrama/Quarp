@@ -29,7 +29,7 @@ using OpenTK;
 
 // input.h -- external (non-keyboard) input devices
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// In_functions

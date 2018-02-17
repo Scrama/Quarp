@@ -28,7 +28,7 @@ using OpenTK.Graphics.OpenGL;
 
 // gl_draw.c
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// Draw_functions, GL_functions
@@ -256,7 +256,7 @@ namespace SharpQuake
 
             GL.Color4(1f, 1f, 1f, 1f);
             Bind(pic.texnum);
-            GL.Begin(BeginMode.Quads);
+            GL.Begin(PrimitiveType.Quads);
             GL.TexCoord2(pic.sl, pic.tl);
             GL.Vertex2(x, y);
             GL.TexCoord2(pic.sh, pic.tl);
@@ -298,7 +298,7 @@ namespace SharpQuake
         {
             GL.Color3(1.0f, 1.0f, 1.0f);
             Bind(_BackTile.texnum); //GL_Bind (*(int *)draw_backtile->data);
-            GL.Begin(BeginMode.Quads);
+            GL.Begin(PrimitiveType.Quads);
             GL.TexCoord2(x / 64.0f, y / 64.0f);
             GL.Vertex2(x, y);
             GL.TexCoord2((x + w) / 64.0f, y / 64.0f);
@@ -365,7 +365,7 @@ namespace SharpQuake
             GL.Enable(EnableCap.Blend);
             GL.Disable(EnableCap.Texture2D);
             GL.Color4(0, 0, 0, 0.8f);
-            GL.Begin(BeginMode.Quads);
+            GL.Begin(PrimitiveType.Quads);
 
             GL.Vertex2(0f, 0f);
             GL.Vertex2(Scr.vid.width, 0f);
@@ -710,7 +710,7 @@ namespace SharpQuake
 
             Bind(_CharTexture);
 
-            GL.Begin(BeginMode.Quads);
+            GL.Begin(PrimitiveType.Quads);
             GL.TexCoord2(fcol, frow);
             GL.Vertex2(x, y);
             GL.TexCoord2(fcol + size, frow);
@@ -834,7 +834,7 @@ namespace SharpQuake
             byte[] pal = Host.BasePal;
 
             GL.Color3(pal[c * 3] / 255.0f, pal[c * 3 + 1] / 255.0f, pal[c * 3 + 2] / 255.0f);
-            GL.Begin(BeginMode.Quads);
+            GL.Begin(PrimitiveType.Quads);
             GL.Vertex2(x, y);
             GL.Vertex2(x + w, y);
             GL.Vertex2(x + w, y + h);
@@ -895,7 +895,7 @@ namespace SharpQuake
             SetTextureFilters(TextureMinFilter.Linear, TextureMagFilter.Linear);
 
             GL.Color3(1f, 1, 1);
-            GL.Begin(BeginMode.Quads);
+            GL.Begin(PrimitiveType.Quads);
             GL.TexCoord2(0f, 0);
             GL.Vertex2((float)x, y);
             GL.TexCoord2(1f, 0);
@@ -930,7 +930,7 @@ namespace SharpQuake
             GL.Enable(EnableCap.Blend);
             GL.Color4(1f, 1f, 1f, alpha);
             Bind(pic.texnum);
-            GL.Begin(BeginMode.Quads);
+            GL.Begin(PrimitiveType.Quads);
             GL.TexCoord2(pic.sl, pic.tl);
             GL.Vertex2(x, y);
             GL.TexCoord2(pic.sh, pic.tl);

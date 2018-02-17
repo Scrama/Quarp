@@ -27,7 +27,7 @@ using OpenTK;
 
 // gl_refrag.c
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Render
     {

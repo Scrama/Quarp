@@ -29,7 +29,7 @@ using OpenTK.Graphics.OpenGL;
 
 // gl_rsurf.c
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Render
     {
@@ -641,7 +641,7 @@ namespace SharpQuake
                         DrawGLWaterPolyLightmap(p);
                     else
                     {
-                        GL.Begin(BeginMode.Polygon);
+                        GL.Begin(PrimitiveType.Polygon);
                         for (int j = 0; j < p.numverts; j++)
                         {
                             float[] v = p.verts[j];
@@ -789,7 +789,7 @@ namespace SharpQuake
 
         private static void DrawGLPoly(glpoly_t p)
         {
-            GL.Begin(BeginMode.Polygon);
+            GL.Begin(PrimitiveType.Polygon);
             for (int i = 0; i < p.numverts; i++)
             {
                 float[] v = p.verts[i];
@@ -961,7 +961,7 @@ namespace SharpQuake
                         CommitLightmap(i);
 
                     GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Blend);
-                    GL.Begin(BeginMode.Polygon);
+                    GL.Begin(PrimitiveType.Polygon);
                     for (i = 0; i < p.numverts; i++)
                     {
                         float[] v = p.verts[i];
@@ -975,7 +975,7 @@ namespace SharpQuake
                 else
                 {
                     Drawer.Bind(t.gl_texturenum);
-                    GL.Begin(BeginMode.Polygon);
+                    GL.Begin(PrimitiveType.Polygon);
                     for (int i = 0; i < p.numverts; i++)
                     {
                         float[] v = p.verts[i];
@@ -986,7 +986,7 @@ namespace SharpQuake
 
                     Drawer.Bind(_LightMapTextures + s.lightmaptexturenum);
                     GL.Enable(EnableCap.Blend);
-                    GL.Begin(BeginMode.Polygon);
+                    GL.Begin(PrimitiveType.Polygon);
                     for (int i = 0; i < p.numverts; i++)
                     {
                         float[] v = p.verts[i];
@@ -1053,7 +1053,7 @@ namespace SharpQuake
                     CommitLightmap(i);
 
                 GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Blend);
-                GL.Begin(BeginMode.TriangleFan);
+                GL.Begin(PrimitiveType.TriangleFan);
                 glpoly_t p = s.polys;
                 float[] nv = new float[3];
                 for (i = 0; i < p.numverts; i++)
@@ -1090,7 +1090,7 @@ namespace SharpQuake
             DisableMultitexture();
 
             float[] nv = new float[3];
-            GL.Begin(BeginMode.TriangleFan);
+            GL.Begin(PrimitiveType.TriangleFan);
 
             for (int i = 0; i < p.numverts; i++)
             {
@@ -1111,7 +1111,7 @@ namespace SharpQuake
             DisableMultitexture();
 
             float[] nv = new float[3];
-            GL.Begin(BeginMode.TriangleFan);
+            GL.Begin(PrimitiveType.TriangleFan);
             for (int i = 0; i < p.numverts; i++)
             {
                 float[] v = p.verts[i];

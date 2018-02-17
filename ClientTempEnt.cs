@@ -27,7 +27,7 @@ using OpenTK;
 
 // cl_tent.c
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Client
     {

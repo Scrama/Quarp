@@ -31,7 +31,7 @@ using System.Text;
 // and the initial and final xor values shown below...  in other words, the
 // CCITT standard CRC used by XMODEM
 
-namespace SharpQuake
+namespace Quarp
 {
     static class CRC
     {

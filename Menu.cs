@@ -28,7 +28,7 @@ using System.IO;
 // menu.h
 // menu.c
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// M_functions

@@ -26,7 +26,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.IO;
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// Con_functions

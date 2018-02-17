@@ -30,7 +30,7 @@ using System.IO;
 
 // key up events are sent even if in console mode
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// Key_functions

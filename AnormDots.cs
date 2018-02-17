@@ -24,7 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SharpQuake
+namespace Quarp
 {
     static class AnormDots
     {

@@ -31,7 +31,7 @@ using OpenTK.Graphics.OpenGL;
 // screen.h
 // gl_screen.c
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// SCR_functions
@@ -240,6 +240,9 @@ namespace SharpQuake
                     if (View.Crosshair > 0)
                         Drawer.DrawCharacter(_VRect.x + _VRect.width / 2, _VRect.y + _VRect.height / 2, '+');
 
+                    //Drawer.DrawString(8, vid.height - Sbar.SBAR_HEIGHT, $"{Math.Round(1.0 / Host.FrameTime)}fps");
+                ;
+
                     DrawRam();
                     DrawNet();
                     DrawTurtle();
@@ -427,11 +430,11 @@ namespace SharpQuake
 	        else
 		        size = _ViewSize.Value;
 
-            if (size >= 120)
-                Sbar.Lines = 0; // no status bar at all
-            else if (size >= 110)
-                Sbar.Lines = 24; // no inventory
-            else
+            //if (size >= 120)
+            //    Sbar.Lines = 0; // no status bar at all
+            //else if (size >= 110)
+            //    Sbar.Lines = 24; // no inventory
+            //else
                 Sbar.Lines = 24 + 16 + 8;
 
             bool full = false;
@@ -450,7 +453,7 @@ namespace SharpQuake
 	        }
 	        size /= 100.0f;
 
-            int h = _VidDef.height - Sbar.Lines;
+            int h = _VidDef.height;// - Sbar.Lines;
 
             refdef_t rdef = Render.RefDef;
 	        rdef.vrect.width = (int)(_VidDef.width * size);
@@ -461,8 +464,8 @@ namespace SharpQuake
 	        }
 
 	        rdef.vrect.height = (int)(_VidDef.height * size);
-	        if (rdef.vrect.height > _VidDef.height - Sbar.Lines)
-		        rdef.vrect.height = _VidDef.height - Sbar.Lines;
+	        if (rdef.vrect.height > _VidDef.height/* - Sbar.Lines*/)
+		        rdef.vrect.height = _VidDef.height/* - Sbar.Lines*/;
 	        if (rdef.vrect.height > _VidDef.height)
                 rdef.vrect.height = _VidDef.height;
 	        rdef.vrect.x = (_VidDef.width - rdef.vrect.width) / 2;

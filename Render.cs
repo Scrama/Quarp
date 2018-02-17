@@ -31,7 +31,7 @@ using OpenTK.Graphics.OpenGL;
 // gl_rmisc.c
 // gl_rmain.c
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// R_functions
@@ -62,6 +62,9 @@ namespace SharpQuake
         static Cvar _WaterAlpha;// = { "r_wateralpha", "1" };
         static Cvar _Dynamic;// = { "r_dynamic", "1" };
         static Cvar _NoVis;// = { "r_novis", "0" };
+
+        private static Cvar _rInterpolateModelAnimation; //{ "r_lerp_animation", "1", true };
+        private static Cvar _rInterpolateModelTransform; //{ "r_lerp_transform", "1", true };
 
         static Cvar _glFinish;// = { "gl_finish", "0" };
         static Cvar _glClear;// = { "gl_clear", "0" };
@@ -121,6 +124,7 @@ namespace SharpQuake
         static float _AmbientLight; // ambientlight
         static float[] _ShadeDots = AnormDots.Values[0]; // shadedots
         static Vector3 _ShadeVector; // shadevector
+        static int _LastPoseNum0; //lastposenum0
         static int _LastPoseNum; // lastposenum
         static Vector3 _LightSpot; // lightspot
         
@@ -178,7 +182,10 @@ namespace SharpQuake
                 _glDoubleEyes = new Cvar("gl_doubleeys", "1");
             }
 
- 	        if (Vid.glMTexable)
+            _rInterpolateModelAnimation = new Cvar("r_lerp_animation", "1", true);
+            _rInterpolateModelTransform = new Cvar("r_lerp_transform", "1", true);
+
+            if (Vid.glMTexable)
 		        Cvar.Set("gl_texsort", 0.0f);
 
             InitParticles();
@@ -291,7 +298,7 @@ namespace SharpQuake
             GL.Rotate(90f, 0, 0, 1);	    // put Z going up
 
             GL.Color4(View.Blend);
-            GL.Begin(BeginMode.Quads);
+            GL.Begin(PrimitiveType.Quads);
             GL.Vertex3(10f, 100, 100);
             GL.Vertex3(10f, -100, 100);
             GL.Vertex3(10f, -100, -100);
@@ -415,7 +422,12 @@ namespace SharpQuake
 
             // hack the depth range to prevent view model from poking into walls
             GL.DepthRange(_glDepthMin, _glDepthMin + 0.3f * (_glDepthMax - _glDepthMin));
+
+            var bkp = _rInterpolateModelTransform.Value;
+            _rInterpolateModelTransform.Set("0");
             DrawAliasModel(_CurrentEntity);
+            _rInterpolateModelTransform.Set(bkp.ToString());
+
             GL.DepthRange(_glDepthMin, _glDepthMax);
         }
 
@@ -520,7 +532,7 @@ namespace SharpQuake
             Drawer.Bind(frame.gl_texturenum);
 
             GL.Enable(EnableCap.AlphaTest);
-            GL.Begin(BeginMode.Quads);
+            GL.Begin(PrimitiveType.Quads);
 
             GL.TexCoord2(0f, 1);
             Vector3 point = e.origin + up * frame.down + right * frame.left;
@@ -663,7 +675,10 @@ namespace SharpQuake
             DisableMultitexture();
 
             GL.PushMatrix();
-            RotateForEntity(e);
+            if (_rInterpolateModelTransform.Value > 0)
+                BlendedRotateForEntity(e);
+            else
+                RotateForEntity(e);
             if (clmodel.name == "progs/eyes.mdl" && _glDoubleEyes.Value != 0)
             {
                 Vector3 v = paliashdr.scale_origin;
@@ -696,7 +711,20 @@ namespace SharpQuake
             if (_glAffineModels.Value != 0)
                 GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Fastest);
 
-            SetupAliasFrame(_CurrentEntity.frame, paliashdr);
+            if (_rInterpolateModelAnimation.Value > 0)
+            {
+                try
+                {
+                    SetupAliasBlendedFrame(_CurrentEntity.frame, paliashdr, _CurrentEntity);
+                }
+                catch (Exception ex)
+                {
+                    Con.Print($"{ex.Message} {ex.StackTrace}");
+                    _rInterpolateModelAnimation.Set("0");
+                }
+            }
+            else
+                SetupAliasFrame(_CurrentEntity.frame, paliashdr);
 
             GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Replace);
 
@@ -745,10 +773,10 @@ namespace SharpQuake
                 if (count < 0)
                 {
                     count = -count;
-                    GL.Begin(BeginMode.TriangleFan);
+                    GL.Begin(PrimitiveType.TriangleFan);
                 }
                 else
-                    GL.Begin(BeginMode.TriangleStrip);
+                    GL.Begin(PrimitiveType.TriangleStrip);
 
                 do
                 {
@@ -799,6 +827,61 @@ namespace SharpQuake
             DrawAliasFrame(paliashdr, pose);
         }
 
+        /*
+         =================
+         R_SetupAliasBlendedFrame
+
+         fenix@io.com: model animation interpolation
+         =================
+         */
+        static void SetupAliasBlendedFrame(int frame, aliashdr_t paliashdr, entity_t e)
+        {
+            double blend;
+
+            if (frame >= paliashdr.numframes || frame < 0)
+            {
+                Con.DPrint("R_AliasSetupFrame: no such frame %d\n", frame);
+                frame = 0;
+            }
+
+            var pose = paliashdr.frames[frame].firstpose;
+            var numposes = paliashdr.frames[frame].numposes;
+
+            if (numposes > 1)
+            {
+                e.FrameInterval = paliashdr.frames[frame].interval;
+                pose += (int)(Client.cl.time / e.FrameInterval) % numposes;
+            }
+            else
+            {
+                /* One tenth of a second is a good for most Quake animations.
+                If the nextthink is longer then the animation is usually meant to pause
+                (e.g. check out the shambler magic animation in shambler.qc).  If its
+                shorter then things will still be smoothed partly, and the jumps will be
+                less noticable because of the shorter time.  So, this is probably a good
+                assumption. */
+                e.FrameInterval = 0.1;
+            }
+
+            if (e.Pose2 != pose)
+            {
+                e.FrameStartTime = Host.RealTime;
+                e.Pose1 = e.Pose2;
+                e.Pose2 = pose;
+                blend = 0;
+            }
+            else
+            {
+                blend = (Host.RealTime - e.FrameStartTime) / e.FrameInterval;
+            }
+
+            // wierd things start happening if blend passes 1
+            if (Client.cl.paused || blend > 1)
+                blend = 1;
+
+            DrawAliasBlendedFrame(paliashdr, e.Pose1, e.Pose2, (float)blend);
+        }
+
         /// <summary>
         /// GL_DrawAliasFrame
         /// </summary>
@@ -821,10 +904,14 @@ namespace SharpQuake
                 if (count < 0)
                 {
                     count = -count;
-                    GL.Begin(BeginMode.TriangleFan);
+                    //GL.Begin(BeginMode.TriangleFan);
+                    GL.Begin(PrimitiveType.TriangleFan);
                 }
                 else
-                    GL.Begin(BeginMode.TriangleStrip);
+                {
+                    //GL.Begin(BeginMode.TriangleStrip);
+                    GL.Begin(PrimitiveType.TriangleStrip);
+                }
 
                 Union4b u1 = Union4b.Empty, u2 = Union4b.Empty;
                 do
@@ -845,6 +932,86 @@ namespace SharpQuake
             }
         }
 
+        /*
+         =============
+         GL_DrawAliasBlendedFrame
+
+         fenix@io.com: model animation interpolation
+         =============
+         */
+        static void DrawAliasBlendedFrame(aliashdr_t paliashdr, int pose1, int pose2, float blend)
+        {
+            _LastPoseNum0 = pose1;
+            _LastPoseNum = pose2;
+
+            var verts = paliashdr.posedata;
+            var offset1 = pose1 * paliashdr.poseverts;
+            var offset2 = pose2 * paliashdr.poseverts;
+
+            if (offset1 > verts.Length)
+            {
+                offset1 = verts.Length - paliashdr.poseverts;
+            }
+
+            var order = paliashdr.commands;
+            var orderOffset = 0;
+
+            while(true)
+            {
+                // get the vertex count and primitive type
+                var count = order[orderOffset++];
+
+                if (count == 0) break;
+
+                if (count < 0)
+                {
+                    count = -count;
+                    //GL.Begin(BeginMode.TriangleFan);
+                    GL.Begin(PrimitiveType.TriangleFan);
+                }
+                else
+                {
+                    //GL.Begin(BeginMode.TriangleStrip);
+                    GL.Begin(PrimitiveType.TriangleStrip);
+                }
+
+                var u1 = Union4b.Empty;
+                var u2 = Union4b.Empty;
+
+                do
+                {
+                    u1.i0 = order[orderOffset + 0];
+                    u2.i0 = order[orderOffset + 1];
+
+                    // texture coordinates come from the draw list
+                    GL.TexCoord2(u1.f0, u2.f0);
+                    orderOffset += 2;
+
+                    // normals and vertexes come from the frame list
+                    // blend the light intensity from the two frames together
+                    v3f d;
+                    d.x = _ShadeDots[verts[offset2].lightnormalindex] -
+                          _ShadeDots[verts[offset1].lightnormalindex];
+
+                    var l = _ShadeLight * (_ShadeDots[verts[offset1].lightnormalindex] + blend * d.x);
+                    GL.Color3(l, l, l);
+
+                    Mathlib.VectorSubtract(ref verts[offset2].v, ref verts[offset1].v, out d);
+
+                    // blend the vertex positions from each frame together
+                    GL.Vertex3(
+                        verts[offset1].v[0] + blend * d.x,
+                        verts[offset1].v[1] + blend * d.y,
+                        verts[offset1].v[2] + blend * d.z
+                    );
+
+                    ++offset1;
+                    ++offset2;
+                } while (--count > 0);
+                GL.End();
+            }
+        }
+
         /// <summary>
         /// R_RotateForEntity
         /// </summary>
@@ -855,6 +1022,99 @@ namespace SharpQuake
             GL.Rotate(e.angles.Y, 0, 0, 1);
             GL.Rotate(-e.angles.X, 0, 1, 0);
             GL.Rotate(e.angles.Z, 1, 0, 0);
+        }
+
+        /*
+        =============
+        R_BlendedRotateForEntity
+
+        fenix@io.com: model transform interpolation
+        =============
+        */
+        static void BlendedRotateForEntity(entity_t e)
+        {
+            double blend;
+            Vector3 d;
+            int i;
+
+            // positional interpolation
+
+            var timepassed = Host.RealTime - e.TranslateStartTime;
+
+            if (e.TranslateStartTime == 0 || timepassed > 1)
+            {
+                e.TranslateStartTime = Host.RealTime;
+                e.Origin1 = e.Origin2;
+                e.Origin2 = e.origin;
+            }
+
+            if (!e.origin.Equals(e.Origin2))
+            {
+                e.TranslateStartTime = Host.RealTime;
+                e.Origin1 = e.Origin2;
+                e.Origin2 = e.origin;
+                blend = 0;
+            }
+            else
+            {
+                blend = timepassed / 0.1;
+
+                if (Client.cl.paused || blend > 1)
+                    blend = 1;
+            }
+
+            Mathlib.VectorSubtract(e.Origin2, e.Origin1, out d);
+
+            GL.Translate(
+                e.Origin1[0] + blend * d[0],
+                e.Origin1[1] + blend * d[1],
+                e.Origin1[2] + blend * d[2]
+            );
+
+            // orientation interpolation (Euler angles, yuck!)
+
+            timepassed = Host.RealTime - e.RotateStartTime;
+
+            if (e.RotateStartTime == 0 || timepassed > 1)
+            {
+                e.RotateStartTime = Host.RealTime;
+                e.Angles1 = e.angles;
+                e.Angles2 = e.Angles1;
+            }
+
+            if (!e.angles.Equals(e.Angles2))
+            {
+                e.RotateStartTime = Host.RealTime;
+                e.Angles1 = e.angles;
+                e.Angles2 = e.Angles1;
+                blend = 0;
+            }
+            else
+            {
+                blend = timepassed / 0.1;
+
+                if (Client.cl.paused || blend > 1)
+                    blend = 1;
+            }
+
+            Mathlib.VectorSubtract(e.Angles2, e.Angles1, out d);
+
+            // always interpolate along the shortest path
+            for (i = 0; i < 3; i++)
+            {
+                if (d[i] > 180)
+                {
+                    d[i] -= 360;
+                }
+                else if (d[i] < -180)
+                {
+                    d[i] += 360;
+                }
+            }
+
+            GL.Rotate(e.Angles1[1] + blend * d[1], 0, 0, 1);
+            GL.Rotate(-e.Angles1[0] - blend * d[0], 0, 1, 0);
+            GL.Rotate(e.Angles1[2] + blend * d[2], 1, 0, 0);
         }
 
         /// <summary>
@@ -1357,6 +1617,20 @@ namespace SharpQuake
         public int skinnum;		// for Alias models
         public int visframe;		// last frame this entity was
         //  found in an active leaf
+
+        //interpolation
+        public double FrameStartTime { get; set; } //frame_start_time
+        public double FrameInterval { get; set; } //frame_interval
+        public int Pose1 { get; set; }
+        public int Pose2 { get;set; }
+
+        public double TranslateStartTime { get; set; } //float translate_start_time;
+        public Vector3 Origin1 { get; set; } //vec3_t origin1;
+        public Vector3 Origin2 { get; set; } //vec3_t origin2;
+
+        public double RotateStartTime { get; set; } //float rotate_start_time;
+        public Vector3 Angles1 { get; set; } //vec3_t angles1;
+        public Vector3 Angles2 { get; set; } //vec3_t angles2;
 
         public int dlightframe;	// dynamic lighting
         public int dlightbits;

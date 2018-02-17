@@ -27,7 +27,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
-namespace SharpQuake
+namespace Quarp
 {
     class NetDatagram : INetDriver
     {

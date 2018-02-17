@@ -31,7 +31,7 @@ using OpenTK;
 //
 // line of sight checks trace->crosscontent, but bullets don't
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Server
     {

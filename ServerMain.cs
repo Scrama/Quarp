@@ -23,7 +23,7 @@
 using System;
 using OpenTK;
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Server
     {

@@ -28,7 +28,7 @@ using System.Text;
 using System.Globalization;
 
 
-namespace SharpQuake
+namespace Quarp
 {
     class Cvar
     {

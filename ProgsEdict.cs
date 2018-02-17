@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
 using System.Globalization;
 using System.IO;
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Progs
     {

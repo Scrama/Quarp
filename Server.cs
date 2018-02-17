@@ -26,7 +26,7 @@ using System.Text;
 using System.Net;
 using OpenTK;
 
-namespace SharpQuake
+namespace Quarp
 {
     static partial class Server
     {

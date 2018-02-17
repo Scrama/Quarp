@@ -22,12 +22,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 using OpenTK;
 
 // cl_parse.c
 
-namespace SharpQuake
+namespace Quarp
 {
     partial class Client
     {
@@ -393,9 +394,18 @@ namespace SharpQuake
                         ent.syncbase = (float)(Sys.Random() & 0x7fff) / 0x7fff;
                     else
                         ent.syncbase = 0;
+
+                    if (model.numframes < ent.Pose1)
+                    {
+                        ent.Pose1 = 0;
+                        ent.Pose2 = 0;
+                    }
                 }
                 else
-                    forcelink = true;	// hack to make null model players work
+                { 
+                    forcelink = true;   // hack to make null model players work
+                    ent.Pose1 = 0;
+                }
 
                 if (num > 0 && num <= cl.maxclients)
                     Render.TranslatePlayerSkin(num - 1);

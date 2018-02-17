@@ -51,7 +51,7 @@ using OpenTK;
 // FIXME:
 // The file "parms.txt" will be read out of the game directory and appended to the current command line arguments to allow different games to initialize startup parms differently.  This could be used to add a "-sspeed 22050" for the high quality sound edition.  Because they are added at the end, they will not override an explicit setting on the original command line.
 	
-namespace SharpQuake
+namespace Quarp
 {
     static class Common
     {

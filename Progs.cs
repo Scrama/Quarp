@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 using string_t = System.Int32;
 using func_t = System.Int32;
 
-namespace SharpQuake
+namespace Quarp
 {
     /// <summary>
     /// PR_functions
