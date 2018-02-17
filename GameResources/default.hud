@@ -1,0 +1,37 @@
+[
+  {
+    "ItemType":"HealthIconHudItem",
+	"X":4,
+	"Y":452
+  },
+  {
+    "ItemType":"HealthValueHudItem",
+	"X":28,
+	"Y":452
+  },
+  {
+    "ItemType":"ArmorIconHudItem",
+	"X":4,
+	"Y":424
+  },
+  {
+    "ItemType":"ArmorValueHudItem",
+	"X":28,
+	"Y":424
+  },
+  {
+    "ItemType":"AmmoIconHudItem",
+	"X":612,
+	"Y":452
+  },
+  {
+    "ItemType":"AmmoValueHudItem",
+	"X":540,
+	"Y":452
+  },
+  {
+    "ItemType":"HorizontalWeaponBarHudItem",
+	"X":224,
+	"Y":452
+  }
+]

@@ -8,7 +8,7 @@ namespace Quarp.HUD
     {
         static bool _showScores; // sb_showscores
 
-        public static Cvar HudConfig; // = { "hud_config", "" };
+        public static Cvar HudConfig; // = { "hud_config", "default" };
 
         private const int StatMinus = 10;  // num frame for '-' stats digit
 
@@ -226,7 +226,7 @@ namespace Quarp.HUD
 
             #endregion
 
-            HudConfig = new Cvar("hud_config", "", true);
+            HudConfig = new Cvar("hud_config", "default", true);
 
             InitConfig();
         }
@@ -239,7 +239,7 @@ namespace Quarp.HUD
         {
             _hudConfig = HudConfig.String;
 
-            if (string.IsNullOrWhiteSpace(_hudConfig))
+            if (string.IsNullOrWhiteSpace(_hudConfig) || _hudConfig.ToLower() == "default")
             {
                 SetDefaultConfig();
                 return;
