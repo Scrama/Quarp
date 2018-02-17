@@ -445,9 +445,6 @@ namespace Quarp
             if ((clip & 2) == 0)
                 return;		// move didn't block on a step
 
-            if (oldonground == 0 && ent.v.waterlevel == 0)
-                return;		// don't stair up while jumping
-
             if (ent.v.movetype != Movetypes.MOVETYPE_WALK)
                 return;		// gibbed by a trigger
 
