@@ -1,23 +1,24 @@
-/// <remarks>
-/// Copyright (C) 2010 Yury Kiselev.
-///
-/// This program is free software; you can redistribute it and/or
-/// modify it under the terms of the GNU General Public License
-/// as published by the Free Software Foundation; either version 2
-/// of the License, or (at your option) any later version.
-/// 
-/// This program is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-/// 
-/// See the GNU General Public License for more details.
-/// 
-/// You should have received a copy of the GNU General Public License
-/// along with this program; if not, write to the Free Software
-/// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-/// </remarks>
+// <remarks>
+// Copyright (C) 2010 Yury Kiselev.
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+// 
+// See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// </remarks>
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -26,12 +27,13 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Input;
 
-
 namespace Quarp
 {
     public class MainForm : GameWindow
     {
-        static byte[] _KeyTable = new byte[130]
+        #region key table
+
+        private static readonly byte[] KeyTable =
         {
             0, Key.K_SHIFT, Key.K_SHIFT, Key.K_CTRL, Key.K_CTRL, Key.K_ALT, Key.K_ALT, 0, // 0 - 7
             0, 0, Key.K_F1, Key.K_F2, Key.K_F3, Key.K_F4, Key.K_F5, Key.K_F6, // 8 - 15
@@ -39,70 +41,65 @@ namespace Quarp
             0, 0, 0, 0, 0, 0, 0, 0, // 24 - 31
             0, 0, 0, 0, 0, 0, 0, 0, // 32 - 39
             0, 0, 0, 0, 0, Key.K_UPARROW, Key.K_DOWNARROW, Key.K_LEFTARROW, // 40 - 47
-            Key.K_RIGHTARROW, Key.K_ENTER, Key.K_ESCAPE, Key.K_SPACE, Key.K_TAB, Key.K_BACKSPACE, Key.K_INS, Key.K_DEL, // 48 - 55
+            Key.K_RIGHTARROW, Key.K_ENTER, Key.K_ESCAPE, Key.K_SPACE, Key.K_TAB, Key.K_BACKSPACE, Key.K_INS,
+            Key.K_DEL, // 48 - 55
             Key.K_PGUP, Key.K_PGDN, Key.K_HOME, Key.K_END, 0, 0, 0, Key.K_PAUSE, // 56 - 63
             0, 0, 0, Key.K_INS, Key.K_END, Key.K_DOWNARROW, Key.K_PGDN, Key.K_LEFTARROW, // 64 - 71
-            0, Key.K_RIGHTARROW, Key.K_HOME, Key.K_UPARROW, Key.K_PGUP, (byte)'/', (byte)'*', (byte)'-', // 72 - 79
-            (byte)'+', (byte)'.', Key.K_ENTER, (byte)'a', (byte)'b', (byte)'c', (byte)'d', (byte)'e', // 80 - 87
-            (byte)'f', (byte)'g', (byte)'h', (byte)'i', (byte)'j', (byte)'k', (byte)'l', (byte)'m', // 88 - 95
-            (byte)'n', (byte)'o', (byte)'p', (byte)'q', (byte)'r', (byte)'s', (byte)'t', (byte)'u', // 96 - 103
-            (byte)'v', (byte)'w', (byte)'x', (byte)'y', (byte)'z', (byte)'0', (byte)'1', (byte)'2', // 104 - 111
-            (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7', (byte)'8', (byte)'9', (byte)'`', // 112 - 119
-            (byte)'-', (byte)'+', (byte)'[', (byte)']', (byte)';', (byte)'\'', (byte)',', (byte)'.', // 120 - 127
-            (byte)'/', (byte)'\\' // 128 - 129
+            0, Key.K_RIGHTARROW, Key.K_HOME, Key.K_UPARROW, Key.K_PGUP, (byte) '/', (byte) '*', (byte) '-', // 72 - 79
+            (byte) '+', (byte) '.', Key.K_ENTER, (byte) 'a', (byte) 'b', (byte) 'c', (byte) 'd', (byte) 'e', // 80 - 87
+            (byte) 'f', (byte) 'g', (byte) 'h', (byte) 'i', (byte) 'j', (byte) 'k', (byte) 'l', (byte) 'm', // 88 - 95
+            (byte) 'n', (byte) 'o', (byte) 'p', (byte) 'q', (byte) 'r', (byte) 's', (byte) 't', (byte) 'u', // 96 - 103
+            (byte) 'v', (byte) 'w', (byte) 'x', (byte) 'y', (byte) 'z', (byte) '0', (byte) '1', (byte) '2', // 104 - 111
+            (byte) '3', (byte) '4', (byte) '5', (byte) '6', (byte) '7', (byte) '8', (byte) '9', (byte) '`', // 112 - 119
+            (byte) '-', (byte) '+', (byte) '[', (byte) ']', (byte) ';', (byte) '\'', (byte) ',',
+            (byte) '.', // 120 - 127
+            (byte) '/', (byte) '\\' // 128 - 129
         };
 
-        static WeakReference _Instance;
-        static DisplayDevice _DisplayDevice;
+        #endregion
 
-        int _MouseBtnState;
-        Stopwatch _Swatch;
+        private static WeakReference _instance;
+
+        private int _mouseBtnState;
+        private readonly Stopwatch _swatch;
+
         public bool ConfirmExit = true;
 
-        public static MainForm Instance
-        {
-            get { return (MainForm)_Instance.Target; }
-        }
-        public static DisplayDevice DisplayDevice
-        {
-            get { return _DisplayDevice; }
-            set { _DisplayDevice = value; }
-        }
-        public static bool IsFullscreen
-        {
-            get { return (Instance.WindowState == WindowState.Fullscreen); }
-        }
+        public static MainForm Instance => (MainForm)_instance.Target;
+
+        public static DisplayDevice DisplayDevice { get; set; }
+
+        public static bool IsFullscreen => Instance.WindowState == WindowState.Fullscreen;
 
 
         private MainForm(Size size, GraphicsMode mode, bool fullScreen)
-            : base(size.Width, size.Height, mode, "SharpQuake", fullScreen ? GameWindowFlags.Fullscreen : GameWindowFlags.Default)
+            : base(size.Width, size.Height, mode, "Quarp", fullScreen ? GameWindowFlags.Fullscreen : GameWindowFlags.Default)
         {
-            _Instance = new WeakReference(this);
-            _Swatch = new Stopwatch();
-            this.VSync = VSyncMode.On;
-            this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-            if (this.Keyboard != null)
+            _instance = new WeakReference(this);
+            _swatch = new Stopwatch();
+            VSync = VSyncMode.On;
+            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            if (Keyboard != null)
             {
-                this.Keyboard.KeyRepeat = true;
-                this.Keyboard.KeyDown += new EventHandler<OpenTK.Input.KeyboardKeyEventArgs>(Keyboard_KeyDown);
-                this.Keyboard.KeyUp += new EventHandler<OpenTK.Input.KeyboardKeyEventArgs>(Keyboard_KeyUp);
+                Keyboard.KeyRepeat = true;
+                Keyboard.KeyDown += Keyboard_KeyDown;
+                Keyboard.KeyUp += Keyboard_KeyUp;
             }
-            if (this.Mouse != null)
+            if (Mouse != null)
             {
-                this.Mouse.Move += new EventHandler<OpenTK.Input.MouseMoveEventArgs>(Mouse_Move);
-                this.Mouse.ButtonDown += new EventHandler<OpenTK.Input.MouseButtonEventArgs>(Mouse_ButtonEvent);
-                this.Mouse.ButtonUp += new EventHandler<OpenTK.Input.MouseButtonEventArgs>(Mouse_ButtonEvent);
-                this.Mouse.WheelChanged += new EventHandler<OpenTK.Input.MouseWheelEventArgs>(Mouse_WheelChanged);
+                Mouse.Move += Mouse_Move;
+                Mouse.ButtonDown += Mouse_ButtonEvent;
+                Mouse.ButtonUp += Mouse_ButtonEvent;
+                Mouse.WheelChanged += Mouse_WheelChanged;
             }
         }
 
-        void Mouse_WheelChanged(object sender, OpenTK.Input.MouseWheelEventArgs e)
+        private static void Mouse_WheelChanged(object sender, MouseWheelEventArgs e)
         {
             if (e.Delta > 0)
             {
                 Key.Event(Key.K_MWHEELUP, true);
                 Key.Event(Key.K_MWHEELUP, false);
-
             }
             else
             {
@@ -111,47 +108,47 @@ namespace Quarp
             }
         }
 
-        void Mouse_ButtonEvent(object sender, OpenTK.Input.MouseButtonEventArgs e)
+        private void Mouse_ButtonEvent(object sender, MouseButtonEventArgs e)
         {
-            _MouseBtnState = 0;
+            _mouseBtnState = 0;
 
             if (e.Button == MouseButton.Left && e.IsPressed)
-                _MouseBtnState |= 1;
+                _mouseBtnState |= 1;
             
             if (e.Button == MouseButton.Right && e.IsPressed)
-                _MouseBtnState |= 2;
+                _mouseBtnState |= 2;
 
             if (e.Button == MouseButton.Middle && e.IsPressed)
-                _MouseBtnState |= 4;
+                _mouseBtnState |= 4;
 
-            Input.MouseEvent(_MouseBtnState);
+            Input.MouseEvent(_mouseBtnState);
         }
 
-        void Mouse_Move(object sender, OpenTK.Input.MouseMoveEventArgs e)
+        private void Mouse_Move(object sender, MouseMoveEventArgs e)
         {
-            Input.MouseEvent(_MouseBtnState);
+            Input.MouseEvent(_mouseBtnState);
         }
 
-        private int MapKey(OpenTK.Input.Key srcKey)
+        private static int MapKey(OpenTK.Input.Key srcKey)
         {
-            int key = (int)srcKey;
+            var key = (int)srcKey;
             key &= 255;
 
-            if (key >= _KeyTable.Length)
+            if (key >= KeyTable.Length)
                 return 0;
             
-            if (_KeyTable[key] == 0)
-                Con.DPrint("key 0x{0:X} has no translation\n", key);
+            if (KeyTable[key] == 0)
+                Con.DPrint($"key 0x{key:X} has no translation\n");
             
-            return _KeyTable[key];
+            return KeyTable[key];
         }
 
-        void Keyboard_KeyUp(object sender, OpenTK.Input.KeyboardKeyEventArgs e)
+        private static void Keyboard_KeyUp(object sender, KeyboardKeyEventArgs e)
         {
             Key.Event(MapKey(e.Key), false);
         }
 
-        void Keyboard_KeyDown(object sender, OpenTK.Input.KeyboardKeyEventArgs e)
+        private static void Keyboard_KeyDown(object sender, KeyboardKeyEventArgs e)
         {
             Key.Event(MapKey(e.Key), true);
         }
@@ -160,25 +157,27 @@ namespace Quarp
         {
             base.OnFocusedChanged(e);
 
-            if (this.Focused)
+            if (Focused)
                 Sound.UnblockSound();
             else
                 Sound.BlockSound();
         }
 
-        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        protected override void OnClosing(CancelEventArgs e)
         {
-            if (this.ConfirmExit)
+            if (ConfirmExit)
             {
-                e.Cancel = (MessageBox.Show("Are you sure you want to quit?",
-                    "Confirm Exit", MessageBoxButtons.YesNo) != DialogResult.Yes);
+                e.Cancel = MessageBox.Show(
+                               @"Are you sure you want to quit?",
+                               @"Confirm Exit", MessageBoxButtons.YesNo
+                           ) != DialogResult.Yes;
             }
             base.OnClosing(e);
         }
-        
-        static MainForm CreateInstance(Size size, GraphicsMode mode, bool fullScreen)
+
+        private static MainForm CreateInstance(Size size, GraphicsMode mode, bool fullScreen)
         {
-            if (_Instance != null)
+            if (_instance != null)
             {
                 throw new Exception("MainForm instance is already created!");
             }
@@ -189,13 +188,13 @@ namespace Quarp
         {
             try
             {
-                if (this.WindowState == OpenTK.WindowState.Minimized || Scr.BlockDrawing)
+                if (WindowState == WindowState.Minimized || Scr.BlockDrawing)
                     Scr.SkipUpdate = true;	// no point in bothering to draw
 
-                _Swatch.Stop();
-                double ts = _Swatch.Elapsed.TotalSeconds;
-                _Swatch.Reset();
-                _Swatch.Start();
+                _swatch.Stop();
+                var ts = _swatch.Elapsed.TotalSeconds;
+                _swatch.Reset();
+                _swatch.Start();
                 Host.Frame(ts);
             }
             catch (EndGameException)
@@ -204,34 +203,30 @@ namespace Quarp
             }
         }
 
-        static string DumpFilePath
-        {
-            get
-            {
-                return Path.Combine(Application.LocalUserAppDataPath, "error.txt");
-            }
-        }
+        private static string DumpFilePath => Path.Combine(Application.StartupPath, "quarp_error.txt");
 
-        static void DumpError(Exception ex)
+        private static void DumpError(Exception ex)
         {
             try
             {
-                FileStream fs = new FileStream(DumpFilePath, FileMode.Append, FileAccess.Write, FileShare.Read);
-                using (StreamWriter writer = new StreamWriter(fs))
+                using (var fs = new FileStream(DumpFilePath, FileMode.Append, FileAccess.Write, FileShare.Read))
                 {
-                    writer.WriteLine();
-                    
-                    Exception ex1 = ex;
-                    while (ex1 != null)
+                    using (var writer = new StreamWriter(fs))
                     {
-                        writer.WriteLine("[" + DateTime.Now.ToString() + "] Unhandled exception:");
-                        writer.WriteLine(ex1.Message);
-                        writer.WriteLine();
-                        writer.WriteLine("Stack trace:");
-                        writer.WriteLine(ex1.StackTrace);
                         writer.WriteLine();
 
-                        ex1 = ex1.InnerException;
+                        var ex1 = ex;
+                        while (ex1 != null)
+                        {
+                            writer.WriteLine($"[{DateTime.Now}] Unhandled exception:");
+                            writer.WriteLine(ex1.Message);
+                            writer.WriteLine();
+                            writer.WriteLine("Stack trace:");
+                            writer.WriteLine(ex1.StackTrace);
+                            writer.WriteLine();
+
+                            ex1 = ex1.InnerException;
+                        }
                     }
                 }
             }
@@ -240,7 +235,7 @@ namespace Quarp
             }
         }
 
-        static void SafeShutdown()
+        private static void SafeShutdown()
         {
             try
             {
@@ -255,70 +250,44 @@ namespace Quarp
             }
         }
 
-        /*static void HandleException(Exception ex)
-        {
-            DumpError(ex);
-            
-            if (Debugger.IsAttached)
-                throw new Exception("Fatal error!", ex);
-
-            Cursor.Show();
-            MessageBox.Show(ex.Message);
-            SafeShutdown();
-        }*/
-
         [STAThread]
         static int Main(string[] args)
         {
-#if !DEBUG
-            try
+            // select display device
+            DisplayDevice = DisplayDevice.Default;
+
+            if (File.Exists(DumpFilePath))
+                File.Delete(DumpFilePath);
+
+            var parms = new quakeparms_t {basedir = Application.StartupPath};
+
+
+            var args2 = new string[args.Length + 1];
+            args2[0] = string.Empty;
+            args.CopyTo(args2, 1);
+
+            Common.InitArgv(args2);
+
+            parms.argv = new string[Common.Argc];
+            Common.Args.CopyTo(parms.argv, 0);
+
+            if (Common.HasParam("-dedicated"))
+                throw new QuakeException("Dedicated server mode not supported!");
+
+            var size = new Size(1280, 720);//Size(640, 480);
+            var mode = new GraphicsMode();
+            var fullScreen = false;
+            using (var form = CreateInstance(size, mode, fullScreen))
             {
-#endif
-                // select display device
-                _DisplayDevice = DisplayDevice.Default;
+                Con.DPrint("Host.Init\n");
+                Host.Init(parms);
 
-                if (File.Exists(DumpFilePath))
-                    File.Delete(DumpFilePath);
-
-                quakeparms_t parms = new quakeparms_t();
-
-                parms.basedir = Application.StartupPath;
-
-                string[] args2 = new string[args.Length + 1];
-                args2[0] = String.Empty;
-                args.CopyTo(args2, 1);
-
-                Common.InitArgv(args2);
-
-                parms.argv = new string[Common.Argc];
-                Common.Args.CopyTo(parms.argv, 0);
-
-                if (Common.HasParam("-dedicated"))
-                    throw new QuakeException("Dedicated server mode not supported!");
-
-                Size size = new Size(640, 480);
-                GraphicsMode mode = new GraphicsMode();
-                bool fullScreen = false;
-                using (MainForm form = MainForm.CreateInstance(size, mode, fullScreen))
-                {
-                    Con.DPrint("Host.Init\n");
-                    Host.Init(parms);
-
-                    form.Run();
-                }
-                Host.Shutdown();
-#if !DEBUG
+                form.Run();
             }
-            catch (QuakeSystemError se)
-            {
-                HandleException(se);
-            }
-            catch (Exception ex)
-            {
-                HandleException(ex);
-            }
-#endif
-                return 0; // all Ok
+
+            SafeShutdown();
+
+            return 0; // all Ok
         }
     }
 }

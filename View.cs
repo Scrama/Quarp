@@ -489,14 +489,14 @@ namespace Quarp
             // roughly equal with different FOV
             float viewSize = Scr.ViewSize.Value; // scr_viewsize
 
-            if (viewSize == 110)
-                view.origin.Z += 1;
-            else if (viewSize == 100)
-                view.origin.Z += 2;
+            /*if (viewSize == 100)
+                view.origin.Z += 3;
             else if (viewSize == 90)
-                view.origin.Z += 1;
+                view.origin.Z += 2;
             else if (viewSize == 80)
-                view.origin.Z += 0.5f;
+                view.origin.Z += 1;
+            else if (viewSize == 70)
+                view.origin.Z += 0.5f;*/
 
             view.model = cl.model_precache[cl.stats[QStats.STAT_WEAPON]];
             view.frame = cl.stats[QStats.STAT_WEAPONFRAME];

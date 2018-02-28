@@ -61,6 +61,8 @@ namespace Quarp
         /// </summary>
         public static void MakeAliasModelDisplayLists(model_t m, aliashdr_t hdr)
         {
+
+            // TODO cut file caching
             _AliasModel = m;
             _AliasHdr = hdr;
 

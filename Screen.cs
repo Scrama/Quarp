@@ -1,33 +1,32 @@
-/// <copyright>
-///
-/// Rewritten in C# by Yury Kiselev, 2010.
-///
-/// Copyright (C) 1996-1997 Id Software, Inc.
-///
-/// This program is free software; you can redistribute it and/or
-/// modify it under the terms of the GNU General Public License
-/// as published by the Free Software Foundation; either version 2
-/// of the License, or (at your option) any later version.
-/// 
-/// This program is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-/// 
-/// See the GNU General Public License for more details.
-/// 
-/// You should have received a copy of the GNU General Public License
-/// along with this program; if not, write to the Free Software
-/// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-/// </copyright>
+// <copyright>
+//
+// Rewritten in C# by Yury Kiselev, 2010.
+//
+// Copyright (C) 1996-1997 Id Software, Inc.
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+// 
+// See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Drawing;
-using System.IO;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
-using Quarp.HUD;
+using Quarp.HudSystem;
+using System;
+using System.Drawing;
+using System.IO;
+using Quarp.Extensions;
 
 // screen.h
 // gl_screen.c
@@ -39,6 +38,7 @@ namespace Quarp
     /// </summary>
     static partial class Scr
     {
+        public static viddef_t VidDef => _VidDef;
         static viddef_t _VidDef = new viddef_t();	// viddef_t vid (global video state)
         static vrect_t _VRect; // scr_vrect
         public static bool IsDisabledForLoading; // scr_disabled_for_loading
@@ -206,14 +206,14 @@ namespace Quarp
                 //
                 SetUpToDrawConsole();
 
-                View.RenderView();
-
-                Set2D();
-
                 //
                 // draw any areas not covered by the refresh
                 //
-                Scr.TileClear();
+                TileClear();
+
+                View.RenderView();
+
+                Set2D();
 
                 if (_DrawDialog)
                 {
@@ -240,9 +240,6 @@ namespace Quarp
                 }
                 else
                 {
-                    if (View.Crosshair > 0)
-                        Drawer.DrawCharacter(_VRect.x + _VRect.width / 2, _VRect.y + _VRect.height / 2, '+');
-
                     //Drawer.DrawString(8, vid.height - Sbar.SBAR_HEIGHT, $"{Math.Round(1.0 / Host.FrameTime)}fps");
                 ;
 
@@ -409,45 +406,23 @@ namespace Quarp
         // Internal use only
         static void CalcRefdef()
         {
-	        Scr.FullUpdate = 0; // force a background redraw
+	        FullUpdate = 0; // force a background redraw
 	        _VidDef.recalc_refdef = false;
 
             // force the status bar to redraw
 	        Sbar.Changed();
 
             // bound viewsize
-            if (_ViewSize.Value < 30)
-                Cvar.Set("viewsize", "30");
-            if (_ViewSize.Value > 120)
-                Cvar.Set("viewsize", "120");
+            _ViewSize.Bound(30, 100);
 
             // bound field of view
-            if (_Fov.Value < 10)
-                Cvar.Set("fov", "10");
-            if (_Fov.Value > 170)
-                Cvar.Set("fov", "170");
+            _Fov.Bound(10, 179);
 
             // intermission is always full screen	
-            float size;
-	        if (Client.cl.intermission > 0)
-		        size = 120;
-	        else
-		        size = _ViewSize.Value;
+            Sbar.Lines = 24 + 16 + 8;
 
-            //if (size >= 120)
-            //    Sbar.Lines = 0; // no status bar at all
-            //else if (size >= 110)
-            //    Sbar.Lines = 24; // no inventory
-            //else
-                Sbar.Lines = 24 + 16 + 8;
-
-            bool full = false;
-	        if (_ViewSize.Value >= 100.0)
-            {
-		        full = true;
-		        size = 100.0f;
-	        } else
-		        size = _ViewSize.Value;
+            var full = _ViewSize.Value >= 100.0;
+            var size = _ViewSize.Value;
 	        
             if (Client.cl.intermission > 0)
 	        {
@@ -457,21 +432,21 @@ namespace Quarp
 	        }
 	        size /= 100.0f;
 
-            int h = _VidDef.height;// - Sbar.Lines;
+            int h = Hud.Height;//_VidDef.height;
 
             refdef_t rdef = Render.RefDef;
-	        rdef.vrect.width = (int)(_VidDef.width * size);
+            rdef.vrect.width = (int)(_VidDef.width * size);
 	        if (rdef.vrect.width < 96)
 	        {
 		        size = 96.0f / rdef.vrect.width;
 		        rdef.vrect.width = 96;	// min for icons
 	        }
 
-	        rdef.vrect.height = (int)(_VidDef.height * size);
-	        if (rdef.vrect.height > _VidDef.height/* - Sbar.Lines*/)
-		        rdef.vrect.height = _VidDef.height/* - Sbar.Lines*/;
-	        if (rdef.vrect.height > _VidDef.height)
-                rdef.vrect.height = _VidDef.height;
+	        rdef.vrect.height = (int)(h * size);
+	        if (rdef.vrect.height > h)
+		        rdef.vrect.height = h;
+	        else if (rdef.vrect.height > h)
+                rdef.vrect.height = h;
 	        rdef.vrect.x = (_VidDef.width - rdef.vrect.width) / 2;
 	        if (full)
 		        rdef.vrect.y = 0;
@@ -497,7 +472,7 @@ namespace Quarp
             return (float)a;
         }
 
-        
+        public static float ConLines => _ConLines;
         /// <summary>
         /// SCR_SetUpToDrawConsole
         /// </summary>
@@ -512,12 +487,12 @@ namespace Quarp
 	        Con.ForcedUp = (Client.cl.worldmodel == null) || (Client.cls.signon != Client.SIGNONS);
 
             if (Con.ForcedUp)
-	        {
-                _ConLines = _VidDef.height; // full screen
+            {
+                _ConLines = Hud.Height;//_VidDef.height; // full screen
 		        _ConCurrent = _ConLines;
 	        }
 	        else if (Key.Destination == keydest_t.key_console)
-		        _ConLines = _VidDef.height / 2; // half screen
+                _ConLines = Hud.Height / (float)2;//_VidDef.height / 2; // half screen
 	        else
 		        _ConLines = 0; // none visible
 	
@@ -549,15 +524,15 @@ namespace Quarp
         // SCR_TileClear
         static void TileClear()
         {
-            refdef_t rdef = Render.RefDef;
+            /*refdef_t rdef = Render.RefDef;
 	        if (rdef.vrect.x > 0)
             {
 		        // left
-                Drawer.TileClear(0, 0, rdef.vrect.x, _VidDef.height - Sbar.Lines);
+                Drawer.TileClear(0, 0, rdef.vrect.x, _VidDef.height);
 		        // right
                 Drawer.TileClear(rdef.vrect.x + rdef.vrect.width, 0,
                     _VidDef.width - rdef.vrect.x + rdef.vrect.width,
-                    _VidDef.height - Sbar.Lines);
+                    _VidDef.height);
 	        }
 	        if (rdef.vrect.y > 0)
             {
@@ -565,8 +540,9 @@ namespace Quarp
 		        Drawer.TileClear(rdef.vrect.x, 0, rdef.vrect.x + rdef.vrect.width, rdef.vrect.y);
 		        // bottom
 		        Drawer.TileClear(rdef.vrect.x, rdef.vrect.y + rdef.vrect.height, 
-			        rdef.vrect.width, _VidDef.height - Sbar.Lines - (rdef.vrect.height + rdef.vrect.y));
-	        }
+			        rdef.vrect.width, _VidDef.height - (rdef.vrect.height + rdef.vrect.y));
+	        }*/
+            Drawer.TileClear(0, 0, glWidth, glHeight);
         }
 
         /// <summary>

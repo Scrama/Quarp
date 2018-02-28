@@ -1,11 +1,16 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using System.Web.Script.Serialization;
+using System.Windows.Forms;
 
-namespace Quarp.HUD
+namespace Quarp.HudSystem
 {
     internal static class Hud
     {
+        public static int Width => _hudEntry?.Width ?? 640;
+        public static int Height => _hudEntry?.Height ?? 480;
+
         static bool _showScores; // sb_showscores
 
         public static Cvar HudConfig; // = { "hud_config", "default" };
@@ -227,13 +232,43 @@ namespace Quarp.HUD
             #endregion
 
             HudConfig = new Cvar("hud_config", "default", true);
+            Cmd.Add("hud_dump", HudDump);
+
+            Cmd.Add("hud_describe", Describe);
 
             InitConfig();
         }
 
-        private static HudItem[] _hudItems;
+        private static void Describe()
+        {
+            Con.Print("--\n");
+            Con.Print($"GL  | [{Scr.glX} {Scr.glY}] [{Scr.glWidth} {Scr.glHeight}]\n");
+            Con.Print($"Vid | [{Scr.VidDef.width} {Scr.VidDef.height}]\n");
+            Con.Print($"Ref | [{Render.RefDef.vrect.x} {Render.RefDef.vrect.y}] [{Render.RefDef.vrect.width} {Render.RefDef.vrect.height}]\n");
+            Con.Print($"Hud | [{Width} {Height}]\n");
+            Con.Print($"Con | [{Scr.ConLines} {Scr.ConCurrent}]\n");
+            Con.Print("--\n");
+        }
+
+        private static void HudDump()
+        {
+            try
+            {
+                var json = new JavaScriptSerializer().Serialize(_hudEntry.Dto);
+                File.WriteAllText($"{Common.GameDir}\\dump.hud", json);
+            }
+            catch (Exception ex)
+            {
+                Con.Print(ex.Message);
+            }
+        }
+
+        private static HudEntry _hudEntry;
 
         private static string _hudConfig;
+
+        private static float _scrHudScale;
+        private static float _scrConScale;
 
         private static void InitConfig()
         {
@@ -253,7 +288,7 @@ namespace Quarp.HUD
             if (bytes == null)
             {
                 Con.Print($"Couldn't load HUD config {path}\n");
-                if (_hudItems == null)
+                if (_hudEntry == null)
                     SetDefaultConfig();
                 return;
             }
@@ -262,8 +297,8 @@ namespace Quarp.HUD
 
             try
             {
-                var dto = new JavaScriptSerializer().Deserialize<HudDto[]>(script);
-                _hudItems = new Factory().Build(dto);
+                var dto = new JavaScriptSerializer().Deserialize<HudEntryDto>(script);
+                _hudEntry = new Factory().Convert(dto);
             }
             catch (Exception ex)
             {
@@ -271,22 +306,28 @@ namespace Quarp.HUD
                 SetDefaultConfig();
             }
 
+            Vid.SetHudScale();
         }
 
         private static void SetDefaultConfig()
         {
-            var dto = new []
+            var entry = new HudEntryDto
             {
-                new HudDto {X = 4, Y = 452, ItemType = nameof(HealthIconHudItem)},
-                new HudDto {X = 28, Y = 452, ItemType = nameof(HealthValueHudItem)},
-                new HudDto {X = 4, Y = 424, ItemType = nameof(ArmorIconHudItem)},
-                new HudDto {X = 28, Y = 424, ItemType = nameof(ArmorValueHudItem)},
-                new HudDto {X = 612, Y = 452, ItemType = nameof(AmmoIconHudItem)},
-                new HudDto {X = 540, Y = 452, ItemType = nameof(AmmoValueHudItem)},
-                new HudDto {X = 224, Y = 452, ItemType = nameof(HorizontalWeaponBarHudItem)}
+                Width = 640,
+                Height = 480,
+                Items = new[]
+                {
+                    new HudItemDto {X = 4, Y = 452, ItemType = nameof(HealthIconHudItem)},
+                    new HudItemDto {X = 28, Y = 452, ItemType = nameof(HealthValueHudItem)},
+                    new HudItemDto {X = 4, Y = 424, ItemType = nameof(ArmorIconHudItem)},
+                    new HudItemDto {X = 28, Y = 424, ItemType = nameof(ArmorValueHudItem)},
+                    new HudItemDto {X = 612, Y = 452, ItemType = nameof(AmmoIconHudItem)},
+                    new HudItemDto {X = 540, Y = 452, ItemType = nameof(AmmoValueHudItem)},
+                    new HudItemDto {X = 224, Y = 452, ItemType = nameof(HorizontalWeaponBarHudItem)}
+                }
             };
 
-            _hudItems = new Factory().Build(dto);
+            _hudEntry = new Factory().Convert(entry);
         }
 
         // Sbar_ShowScores
@@ -310,8 +351,7 @@ namespace Quarp.HUD
 
         public static void Draw()
         {
-            var vid = Scr.vid;
-            if (Math.Abs(Scr.ConCurrent - vid.height) < 0.1)
+            if (Math.Abs(Scr.ConCurrent - Height) < 0.1)
                 return;
 
             Scr.CopyEverithing = true;
@@ -326,7 +366,10 @@ namespace Quarp.HUD
             if (_hudConfig != HudConfig.String)
                 InitConfig();
 
-            foreach (var item in _hudItems)
+            if (View.Crosshair > 0)
+                Drawer.DrawCharacter(Width / 2 - 4, Height / 2 - 4, '+');
+
+            foreach (var item in _hudEntry.Items)
             {
                 item.Draw();
             }

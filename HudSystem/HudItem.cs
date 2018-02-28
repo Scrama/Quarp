@@ -1,10 +1,19 @@
-﻿namespace Quarp.HUD
+﻿namespace Quarp.HudSystem
 {
     internal class HudItem
     {
+        protected readonly HudItemDto Data;
+
+        internal HudItem(HudItemDto data)
+        {
+            Data = data;
+        }
+
         public virtual void Draw()
         {
         }
+
+        public HudItemDto Dto => Data;
     }
 
     #region Health
@@ -14,22 +23,19 @@
     /// </summary>
     internal sealed class HealthValueHudItem : HudItem
     {
-        private readonly HudDto _data;
+        internal HealthValueHudItem(HudItemDto data) : base(data)
+        {
+        }
 
         public override void Draw()
         {
             Hud.DrawNum(
-                _data.X,
-                _data.Y,
+                Data.X,
+                Data.Y,
                 Client.cl.stats[QStats.STAT_HEALTH],
                 3,
                 Client.cl.stats[QStats.STAT_HEALTH] <= 25 ? 1 : 0
             );
-        }
-
-        internal HealthValueHudItem(HudDto data)
-        {
-            _data = data;
         }
     }
 
@@ -38,32 +44,30 @@
     /// </summary>
     internal sealed class HealthIconHudItem : HudItem
     {
-        private readonly HudDto _data;
-
         public override void Draw()
         {
             var cl = Client.cl;
 
-            int f, anim;
+            int f;
 
             if (cl.HasItems(QItems.IT_INVISIBILITY | QItems.IT_INVULNERABILITY))
             {
-                Drawer.DrawPic(_data.X, _data.Y, Hud.FaceInvisInvuln);
+                Drawer.DrawPic(Data.X, Data.Y, Hud.FaceInvisInvuln);
                 return;
             }
             if (cl.HasItems(QItems.IT_QUAD))
             {
-                Drawer.DrawPic(_data.X, _data.Y, Hud.FaceQuad);
+                Drawer.DrawPic(Data.X, Data.Y, Hud.FaceQuad);
                 return;
             }
             if (cl.HasItems(QItems.IT_INVISIBILITY))
             {
-                Drawer.DrawPic(_data.X, _data.Y, Hud.FaceInvis);
+                Drawer.DrawPic(Data.X, Data.Y, Hud.FaceInvis);
                 return;
             }
             if (cl.HasItems(QItems.IT_INVULNERABILITY))
             {
-                Drawer.DrawPic(_data.X, _data.Y, Hud.FaceQuad);
+                Drawer.DrawPic(Data.X, Data.Y, Hud.FaceQuad);
                 return;
             }
 
@@ -72,14 +76,13 @@
             else
                 f = cl.stats[QStats.STAT_HEALTH] / 20;
 
-            anim = cl.time <= cl.faceanimtime ? 1 : 0;
+            var anim = cl.time <= cl.faceanimtime ? 1 : 0;
 
-            Drawer.DrawPic(_data.X, _data.Y, Hud.Faces[f, anim]);
+            Drawer.DrawPic(Data.X, Data.Y, Hud.Faces[f, anim]);
         }
 
-        internal HealthIconHudItem(HudDto data)
+        internal HealthIconHudItem(HudItemDto data) : base(data)
         {
-            _data = data;
         }
     }
 
@@ -92,15 +95,13 @@
     /// </summary>
     internal sealed class ArmorValueHudItem : HudItem
     {
-        private readonly HudDto _data;
-
         public override void Draw()
         {
             if (Client.cl.HasItems(QItems.IT_INVULNERABILITY))
             {
                 Hud.DrawNum(
-                    _data.X,
-                    _data.Y,
+                    Data.X,
+                    Data.Y,
                     666,
                     3,
                     1
@@ -110,8 +111,8 @@
             {
                 if (Client.cl.stats[QStats.STAT_ARMOR] > 0)
                     Hud.DrawNum(
-                        _data.X,
-                        _data.Y,
+                        Data.X,
+                        Data.Y,
                         Client.cl.stats[QStats.STAT_ARMOR],
                         3,
                         Client.cl.stats[QStats.STAT_ARMOR] <= 25 ? 1 : 0
@@ -119,9 +120,8 @@
             }
         }
 
-        internal ArmorValueHudItem(HudDto data)
+        internal ArmorValueHudItem(HudItemDto data) : base(data)
         {
-            _data = data;
         }
     }
 
@@ -130,29 +130,26 @@
     /// </summary>
     internal sealed class ArmorIconHudItem : HudItem
     {
-        private readonly HudDto _data;
-
         public override void Draw()
         {
             var cl = Client.cl;
 
             if (cl.HasItems(QItems.IT_INVULNERABILITY))
             {
-                Drawer.DrawPic(_data.X, _data.Y, Drawer.Disc);
+                Drawer.DrawPic(Data.X, Data.Y, Drawer.Disc);
                 return;
             }
 
             if (cl.HasItems(QItems.IT_ARMOR3))
-                Drawer.DrawPic(_data.X, _data.Y, Hud.Armor[2]);
+                Drawer.DrawPic(Data.X, Data.Y, Hud.Armor[2]);
             else if (cl.HasItems(QItems.IT_ARMOR2))
-                Drawer.DrawPic(_data.X, _data.Y, Hud.Armor[1]);
+                Drawer.DrawPic(Data.X, Data.Y, Hud.Armor[1]);
             else if (cl.HasItems(QItems.IT_ARMOR1))
-                Drawer.DrawPic(_data.X, _data.Y, Hud.Armor[0]);
+                Drawer.DrawPic(Data.X, Data.Y, Hud.Armor[0]);
         }
 
-        internal ArmorIconHudItem(HudDto data)
+        internal ArmorIconHudItem(HudItemDto data) : base(data)
         {
-            _data = data;
         }
     }
 
@@ -166,23 +163,20 @@
     /// </summary>
     internal sealed class AmmoValueHudItem : HudItem
     {
-        private readonly HudDto _data;
-
         public override void Draw()
         {
             if (Client.cl.HasAny(Hud.AmmoConsts))
                 Hud.DrawNum(
-                    _data.X,
-                    _data.Y,
+                    Data.X,
+                    Data.Y,
                     Client.cl.stats[QStats.STAT_AMMO],
                     3,
                     Client.cl.stats[QStats.STAT_AMMO] <= 10 ? 1 : 0
                 );
         }
 
-        internal AmmoValueHudItem(HudDto data)
+        internal AmmoValueHudItem(HudItemDto data) : base(data)
         {
-            _data = data;
         }
     }
 
@@ -191,25 +185,22 @@
     /// </summary>
     internal sealed class AmmoIconHudItem : HudItem
     {
-        private readonly HudDto _data;
-
         public override void Draw()
         {
             var cl = Client.cl;
 
             if (cl.HasItems(QItems.IT_SHELLS))
-                Drawer.DrawPic(_data.X, _data.Y, Hud.Ammo[0]);
+                Drawer.DrawPic(Data.X, Data.Y, Hud.Ammo[0]);
             else if (cl.HasItems(QItems.IT_NAILS))
-                Drawer.DrawPic(_data.X, _data.Y, Hud.Ammo[1]);
+                Drawer.DrawPic(Data.X, Data.Y, Hud.Ammo[1]);
             else if (cl.HasItems(QItems.IT_ROCKETS))
-                Drawer.DrawPic(_data.X, _data.Y, Hud.Ammo[2]);
+                Drawer.DrawPic(Data.X, Data.Y, Hud.Ammo[2]);
             else if (cl.HasItems(QItems.IT_CELLS))
-                Drawer.DrawPic(_data.X, _data.Y, Hud.Ammo[3]);
+                Drawer.DrawPic(Data.X, Data.Y, Hud.Ammo[3]);
         }
 
-        internal AmmoIconHudItem(HudDto data)
+        internal AmmoIconHudItem(HudItemDto data) : base(data)
         {
-            _data = data;
         }
     }
 
@@ -222,8 +213,6 @@
     /// </summary>
     internal sealed class HorizontalWeaponBarHudItem : HudItem
     {
-        private readonly HudDto _data;
-
         public override void Draw()
         {
             var cl = Client.cl;
@@ -242,7 +231,7 @@
                 else
                     flashon = flashon % 5 + 2;
 
-                Drawer.DrawPic(_data.X + i * 24, _data.Y + 8, Hud.Weapons[flashon, i]);
+                Drawer.DrawPic(Data.X + i * 24, Data.Y + 8, Hud.Weapons[flashon, i]);
             }
 
             // ammo counts
@@ -250,17 +239,16 @@
             {
                 var num = cl.stats[QStats.STAT_SHELLS + i].ToString().PadLeft(3);
                 if (num[0] != ' ')
-                    Drawer.DrawCharacter(_data.X + (6 * i + 1) * 8 - 2, _data.Y, 18 + num[0] - '0');
+                    Drawer.DrawCharacter(Data.X + (6 * i + 1) * 8 - 2, Data.Y, 18 + num[0] - '0');
                 if (num[1] != ' ')
-                    Drawer.DrawCharacter(_data.X + (6 * i + 2) * 8 - 2, _data.Y, 18 + num[1] - '0');
+                    Drawer.DrawCharacter(Data.X + (6 * i + 2) * 8 - 2, Data.Y, 18 + num[1] - '0');
                 if (num[2] != ' ')
-                    Drawer.DrawCharacter(_data.X + (6 * i + 3) * 8 - 2, _data.Y, 18 + num[2] - '0');
+                    Drawer.DrawCharacter(Data.X + (6 * i + 3) * 8 - 2, Data.Y, 18 + num[2] - '0');
             }
         }
 
-        internal HorizontalWeaponBarHudItem(HudDto data)
+        internal HorizontalWeaponBarHudItem(HudItemDto data) : base(data)
         {
-            _data = data;
         }
     }
 

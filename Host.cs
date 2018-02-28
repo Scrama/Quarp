@@ -218,7 +218,7 @@ namespace Quarp
 	        //Con.Print("Exe: "__TIME__" "__DATE__"\n");
 	        //Con.Print("%4.1f megabyte heap\n",parms->memsize/ (1024*1024.0));
 	
-	        Render.InitTextures();		// needed even for dedicated servers
+	        Render.InitTextures();      // needed even for dedicated servers
 
             if (Client.cls.state != cactive_t.ca_dedicated)
 	        {
@@ -238,13 +238,13 @@ namespace Quarp
                 Sound.Init();
 		        CDAudio.Init();
 		        Sbar.Init();
-	            HUD.Hud.Init();
+	            HudSystem.Hud.Init();
 		        Client.Init();
 	        }
 
-	        Cbuf.InsertText ("exec quake.rc\n");
+            Cbuf.InsertText("exec quake.rc\n");
 
-	        _IsInitialized = true;
+            _IsInitialized = true;
 	
 	        Con.DPrint ("========Quake Initialized=========\n");	
         }

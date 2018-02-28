@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 using OpenTK.Graphics.OpenGL;
+using Quarp.HudSystem;
 
 // gl_draw.c
 
@@ -193,7 +194,7 @@ namespace Quarp
 	        Wad.SwapPic(cbHeader);
 
 	        // hack the version number directly into the pic
-            string ver = String.Format("(c# {0,7:F2}) {1,7:F2}", (float)QDef.CSQUAKE_VERSION, (float)QDef.VERSION);
+            string ver = $"Quarp {QDef.CSQUAKE_VERSION,7:F2}";
             int offset2 = Marshal.SizeOf(typeof(dqpicheader_t)) + 320 * 186 + 320 - 11 - 8 * ver.Length;
 	        int y = ver.Length;
             for (int x = 0; x < y; x++)
@@ -207,8 +208,8 @@ namespace Quarp
             SetTextureFilters(TextureMinFilter.Nearest, TextureMagFilter.Nearest);
 
             _ConBack.texnum = LoadTexture("conback", _ConBack.width, _ConBack.height, new ByteArraySegment(buf, ncdataIndex), false, false);
-	        _ConBack.width = Scr.vid.width;
-            _ConBack.height = Scr.vid.height;
+            _ConBack.width = Hud.Width;//Scr.vid.width;
+            _ConBack.height = Hud.Height;//Scr.vid.height;
 
 	        // save a texture slot for translated picture
 	        _TranslateTexture = _TextureExtensionNumber++;
@@ -911,12 +912,12 @@ namespace Quarp
         // Draw_ConsoleBackground
         public static void DrawConsoleBackground(int lines)
         {
-            int y = (Scr.vid.height * 3) >> 2;
+            /*int y = (Scr.vid.height * 3) >> 2;
 
             if (lines > y)
                 DrawPic(0, lines - Scr.vid.height, _ConBack);
-            else
-                DrawAlphaPic(0, lines - Scr.vid.height, _ConBack, (float)(1.2 * lines) / y);
+            else*/
+                DrawAlphaPic(0, lines - _ConBack.height, _ConBack, 0.7f);
         }
 
         

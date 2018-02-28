@@ -1,32 +1,32 @@
-/// <copyright>
-///
-/// Rewritten in C# by Yury Kiselev, 2010.
-///
-/// Copyright (C) 1996-1997 Id Software, Inc.
-///
-/// This program is free software; you can redistribute it and/or
-/// modify it under the terms of the GNU General Public License
-/// as published by the Free Software Foundation; either version 2
-/// of the License, or (at your option) any later version.
-/// 
-/// This program is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-/// 
-/// See the GNU General Public License for more details.
-/// 
-/// You should have received a copy of the GNU General Public License
-/// along with this program; if not, write to the Free Software
-/// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-/// </copyright>
+// <copyright>
+//
+// Rewritten in C# by Yury Kiselev, 2010.
+//
+// Copyright (C) 1996-1997 Id Software, Inc.
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+// 
+// See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Drawing;
-using System.IO;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using Quarp.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 
 // vid.h -- video driver defs
 
@@ -37,9 +37,6 @@ namespace Quarp
     /// </summary>
     static class Vid
     {
-        const int WARP_WIDTH = 320;
-        const int WARP_HEIGHT = 200;
-
         public const int VID_CBITS = 6;
         public const int VID_GRADES = (1 << VID_CBITS);
         
@@ -61,8 +58,7 @@ namespace Quarp
         static Cvar _Wait;// = { "vid_wait", "0" };
         static Cvar _NoPageFlip;// = { "vid_nopageflip", "0", true };
         static Cvar _WaitOverride;// = { "_vid_wait_override", "0", true };
-        static Cvar _ConfigX;// = { "vid_config_x", "800", true };
-        static Cvar _ConfigY;// = { "vid_config_y", "600", true };
+        public static Cvar ScrHudScale;// = { "scr_hudscale", "2", true };
         static Cvar _StretchBy2;// = { "vid_stretch_by_2", "1", true };
         static Cvar _WindowedMouse;// = { "_windowed_mouse", "1", true };
 
@@ -113,15 +109,26 @@ namespace Quarp
         {
             get { return _ModeNum; }
         }
-        
+
+        static Vid()
+        {
+            ScrHudScale = new Cvar("scr_hudscale", "2", true);
+        }
+
+        public static bool Initialized { get; private set; } = false;
+
         // VID_Init (unsigned char *palette)
         // Called at startup to set up translation tables, takes 256 8 bit RGB values
         // the palette data will go away after the call, so it must be copied off if
         // the video driver will need it again
         public static void Init (byte[] palette)
         {
+            Initialized = false;
+
             if (_glZTrick == null)
             {
+                #region . define cvars .
+
                 _glZTrick = new Cvar("gl_ztrick", "1");
                 _Mode = new Cvar("vid_mode", "0", false);
                 _DefaultMode = new Cvar("_vid_default_mode", "0", true);
@@ -129,62 +136,68 @@ namespace Quarp
                 _Wait = new Cvar("vid_wait", "0");
                 _NoPageFlip = new Cvar("vid_nopageflip", "0", true);
                 _WaitOverride = new Cvar("_vid_wait_override", "0", true);
-                _ConfigX = new Cvar("vid_config_x", "800", true);
-                _ConfigY = new Cvar("vid_config_y", "600", true);
                 _StretchBy2 = new Cvar("vid_stretch_by_2", "1", true);
                 _WindowedMouse = new Cvar("_windowed_mouse", "1", true);
+
+                Cmd.Add("vid_nummodes", NumModes_f);
+                Cmd.Add("vid_describecurrentmode", DescribeCurrentMode_f);
+                Cmd.Add("vid_describemode", DescribeMode_f);
+                Cmd.Add("vid_describemodes", DescribeModes_f);
+                Cmd.Add("vid_restart", () => Init(palette));
+
+                #endregion
             }
 
-            Cmd.Add("vid_nummodes", NumModes_f);
-            Cmd.Add("vid_describecurrentmode", DescribeCurrentMode_f);
-            Cmd.Add("vid_describemode", DescribeMode_f);
-            Cmd.Add("vid_describemodes", DescribeModes_f);
 
-            DisplayDevice dev = MainForm.DisplayDevice;
-            
-            // Enumerate available modes, skip 8 bpp modes, and group by refresh rates
-            List<mode_t> tmp = new List<mode_t>(dev.AvailableResolutions.Count);
-            foreach (DisplayResolution res in dev.AvailableResolutions)
+            var display = MainForm.DisplayDevice;
+
+            #region . Enumerate available modes, skip 8 bpp modes, and group by refresh rates .
+
+            var tmp = new List<mode_t>(display.AvailableResolutions.Count);
+            foreach (var res in display.AvailableResolutions)
             {
                 if (res.BitsPerPixel <= 8)
                     continue;
-                
-                Predicate<mode_t> SameMode = delegate(mode_t m)
-                {
-                    return (m.width == res.Width && m.height == res.Height && m.bpp == res.BitsPerPixel);
-                };
-                if (tmp.Exists(SameMode))
+
+                if (tmp.Exists(m => m.Is(res)))
                     continue;
 
-                mode_t mode = new mode_t();
-                mode.width = res.Width;
-                mode.height = res.Height;
-                mode.bpp = res.BitsPerPixel;
-                mode.refreshRate = res.RefreshRate;
+                var mode = new mode_t
+                {
+                    width = res.Width,
+                    height = res.Height,
+                    bpp = res.BitsPerPixel,
+                    refreshRate = res.RefreshRate
+                };
                 tmp.Add(mode);
             }
             _Modes = tmp.ToArray();
-            
-            mode_t mode1 = new mode_t();
-            mode1.width = dev.Width;
-            mode1.height = dev.Height;
-            mode1.bpp = dev.BitsPerPixel;
-            mode1.refreshRate = dev.RefreshRate;
-            mode1.fullScreen = true;
 
-            int width = dev.Width, height = dev.Height;
-            int i = Common.CheckParm("-width");
+            #endregion
+
+            var mode1 = new mode_t
+            {
+                width = display.Width,
+                height = display.Height,
+                bpp = display.BitsPerPixel,
+                refreshRate = display.RefreshRate,
+                fullScreen = true
+            };
+
+            var width = display.Width;
+            var height = display.Height;
+            var i = Common.CheckParm("-width");
             if (i > 0 && i < Common.Argc - 1)
             {
                 width = Common.atoi(Common.Argv(i + 1));
 
-                foreach (DisplayResolution res in dev.AvailableResolutions)
+                foreach (var res in display.AvailableResolutions)
                 {
-                    if (res.Width == width)
-                    {
-                        height = res.Height;
-                        break;
-                    }
+                    if (res.Width != width)
+                        continue;
+
+                    height = res.Height;
+                    break;
                 }
             }
 
@@ -198,19 +211,20 @@ namespace Quarp
 	        if (Common.HasParam("-window"))
 	        {
 		        _Windowed = true;
+                MainForm.Instance.Size = new Size(width, height);
 	        }
-	        else
+            else
 	        {
                 _Windowed = false;
                 
                 if (Common.HasParam("-current"))
                 {
-                    mode1.width = dev.Width;
-                    mode1.height = dev.Height;
+                    mode1.width = display.Width;
+                    mode1.height = display.Height;
                 }
                 else
                 {
-                    int bpp = mode1.bpp;
+                    var bpp = mode1.bpp;
                     i = Common.CheckParm("-bpp");
                     if (i > 0 && i < Common.Argc - 1)
                     {
@@ -222,30 +236,8 @@ namespace Quarp
 
 	        _IsInitialized = true;
 
-            int i2 = Common.CheckParm("-conwidth");
-            if (i2 > 0)
-                Scr.vid.conwidth = Common.atoi(Common.Argv(i2 + 1));
-            else
-                Scr.vid.conwidth = 640;
-
-            Scr.vid.conwidth &= 0xfff8; // make it a multiple of eight
-
-            if (Scr.vid.conwidth < 320)
-                Scr.vid.conwidth = 320;
-
-            // pick a conheight that matches with correct aspect
-            Scr.vid.conheight = Scr.vid.conwidth * 3 / 4;
-
-            i2 = Common.CheckParm("-conheight");
-            if (i2 > 0)
-                Scr.vid.conheight = Common.atoi(Common.Argv(i2 + 1));
-            if (Scr.vid.conheight < 200)
-                Scr.vid.conheight = 200;
-
-            Scr.vid.maxwarpwidth = WARP_WIDTH;
-            Scr.vid.maxwarpheight = WARP_HEIGHT;
             Scr.vid.colormap = Host.ColorMap;
-            int v = BitConverter.ToInt32(Host.ColorMap, 2048);
+            var v = BitConverter.ToInt32(Host.ColorMap, 2048);
             Scr.vid.fullbright = 256 - Common.LittleLong(v);
 
             CheckGamma(palette);
@@ -254,25 +246,35 @@ namespace Quarp
             mode1.fullScreen = !_Windowed;
 
             _DefModeNum = -1;
-            for (i = 0; i < _Modes.Length; i++)
+            for (i = 0; i < _Modes.Length; ++i)
             {
-                mode_t m = _Modes[i];
+                var m = _Modes[i];
                 if (m.width != mode1.width || m.height != mode1.height)
                     continue;
 
                 _DefModeNum = i;
 
-                if (m.bpp == mode1.bpp && m.refreshRate == mode1.refreshRate)
+                if (m.bpp == mode1.bpp && Math.Abs(m.refreshRate - mode1.refreshRate) < 0.1)
                     break;
             }
             if (_DefModeNum == -1)
                 _DefModeNum = 0;
-            
+
             SetMode(_DefModeNum, palette);
 
             InitOpenGL();
 
+            // TODO remove
             Directory.CreateDirectory(Path.Combine(Common.GameDir, "glquake"));
+
+            Initialized = true;
+        }
+
+        public static void SetHudScale()
+        {
+            Scr.vid.height = HudSystem.Hud.Height;
+            Scr.vid.width = HudSystem.Hud.Width;
+            Scr.vid.recalc_refdef = true;
         }
 
         /// <summary>
@@ -351,7 +353,7 @@ namespace Quarp
                 form.WindowState = WindowState.Normal;
                 form.WindowBorder = WindowBorder.Fixed;
                 form.Location = new Point((mode.width - form.Width) / 2, (mode.height - form.Height) / 2);
-                if (_WindowedMouse.Value != 0 && Key.Destination == keydest_t.key_game)
+                if (Math.Abs(_WindowedMouse.Value) > 0.1 && Key.Destination == keydest_t.key_game)
                 {
                     Input.ActivateMouse();
                     Input.HideMouse();
@@ -376,16 +378,9 @@ namespace Quarp
                 form.WindowBorder = WindowBorder.Hidden;
             }
 
-            viddef_t vid = Scr.vid;
-            if (vid.conheight > dev.Height)
-                vid.conheight = dev.Height;
-            if (vid.conwidth > dev.Width)
-                vid.conwidth = dev.Width;
+            SetHudScale();
             
-            vid.width = vid.conwidth;
-            vid.height = vid.conheight;
-
-            vid.numpages = 2;
+            Scr.vid.numpages = 2;
             
             CDAudio.Resume();
             Scr.IsDisabledForLoading = temp;
@@ -399,8 +394,6 @@ namespace Quarp
             Con.SafePrint("Video mode {0} initialized.\n", GetModeDescription(_ModeNum));
 
             SetPalette(palette);
-
-            vid.recalc_refdef = true;
         }
 
         // VID_NumModes_f
@@ -445,10 +438,11 @@ namespace Quarp
         public static string GetModeDescription(int mode)
         {
 	        if (mode < 0 || mode >= _Modes.Length)
-		        return String.Empty;
+		        return string.Empty;
 
-            mode_t m = _Modes[mode];
-            return String.Format("{0}x{1}x{2} {3}", m.width, m.height, m.bpp, _Windowed ? "windowed" : "fullscreen");
+            var m = _Modes[mode];
+            var w = _Windowed ? "windowed" : "fullscreen";
+            return $"{m.width}x{m.height}x{m.bpp} {w}";
         }
 
         static string GetExtModeDescription (int mode)
@@ -594,10 +588,6 @@ namespace Quarp
         public float aspect;		// width / height -- < 0 is taller than wide
         public int numpages;
         public bool recalc_refdef;	// if true, recalc vid-based stuff
-        public int conwidth; // unsigned
-        public int conheight; // unsigned
-        public int maxwarpwidth;
-        public int maxwarpheight;
     } // viddef_t;
 
     class mode_t
