@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using Quarp.HudSystem;
 
 // keys.h 
 // keys.c
@@ -816,8 +817,8 @@ namespace Quarp
             if (key == K_PGUP || key == K_MWHEELUP)
             {
                 Con.BackScroll += 2;
-                if (Con.BackScroll > Con.TotalLines - (Scr.vid.height >> 3) - 1)
-                    Con.BackScroll = Con.TotalLines - (Scr.vid.height >> 3) - 1;
+                if (Con.BackScroll > Con.TotalLines - (Hud.Height >> 3) - 1)
+                    Con.BackScroll = Con.TotalLines - (Hud.Height >> 3) - 1;
                 return;
             }
 
@@ -831,7 +832,7 @@ namespace Quarp
 
             if (key == K_HOME)
             {
-                Con.BackScroll = Con.TotalLines - (Scr.vid.height >> 3) - 1;
+                Con.BackScroll = Con.TotalLines - (Hud.Height >> 3) - 1;
                 return;
             }
 

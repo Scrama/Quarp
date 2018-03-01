@@ -264,14 +264,12 @@ namespace Quarp
 
             InitOpenGL();
 
-            // TODO remove
-            Directory.CreateDirectory(Path.Combine(Common.GameDir, "glquake"));
-
             Initialized = true;
         }
 
         public static void SetHudScale()
         {
+            //TODO Remove
             Scr.vid.height = HudSystem.Hud.Height;
             Scr.vid.width = HudSystem.Hud.Width;
             Scr.vid.recalc_refdef = true;

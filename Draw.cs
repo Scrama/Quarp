@@ -278,7 +278,7 @@ namespace Quarp
             if (_Disc != null)
             {
                 GL.DrawBuffer(DrawBufferMode.Front);
-                DrawPic(Scr.vid.width - 24, 0, _Disc);
+                DrawPic(Hud.Width - 24, 0, _Disc);
                 GL.DrawBuffer(DrawBufferMode.Back);
             }
         }
@@ -369,9 +369,9 @@ namespace Quarp
             GL.Begin(PrimitiveType.Quads);
 
             GL.Vertex2(0f, 0f);
-            GL.Vertex2(Scr.vid.width, 0f);
-            GL.Vertex2((float)Scr.vid.width, (float)Scr.vid.height);
-            GL.Vertex2(0f, Scr.vid.height);
+            GL.Vertex2(Hud.Width, 0f);
+            GL.Vertex2(Hud.Width, Hud.Height);
+            GL.Vertex2(0f, Hud.Height);
 
             GL.End();
             GL.Color4(1f, 1f, 1f, 1f);
@@ -848,8 +848,8 @@ namespace Quarp
         // Draw_TransPic
         public static void DrawTransPic(int x, int y, glpic_t pic)
         {
-            if (x < 0 || (uint)(x + pic.width) > Scr.vid.width ||
-                y < 0 || (uint)(y + pic.height) > Scr.vid.height)
+            if (x < 0 || (uint)(x + pic.width) > Hud.Width ||
+                y < 0 || (uint)(y + pic.height) > Hud.Height)
             {
                 Sys.Error("Draw_TransPic: bad coordinates");
             }

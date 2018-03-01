@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using Quarp.HudSystem;
 
 // menu.h
 // menu.c
@@ -88,7 +89,7 @@ namespace Quarp
 
                 if (Scr.ConCurrent > 0)
                 {
-                    Drawer.DrawConsoleBackground(Scr.vid.height);
+                    Drawer.DrawConsoleBackground(Hud.Height);
                     Sound.ExtraUpdate();
                 }
                 else
@@ -221,12 +222,12 @@ namespace Quarp
 
         public static void DrawPic(int x, int y, glpic_t pic)
         {
-            Drawer.DrawPic(x + ((Scr.vid.width - 320) >> 1), y, pic);
+            Drawer.DrawPic(x + ((Hud.Width - 320) >> 1), y, pic);
         }
 
         public static void DrawTransPic(int x, int y, glpic_t pic)
         {
-            Drawer.DrawTransPic(x + ((Scr.vid.width - 320) >> 1), y, pic);
+            Drawer.DrawTransPic(x + ((Hud.Width - 320) >> 1), y, pic);
         }
 
         /// <summary>
@@ -234,7 +235,7 @@ namespace Quarp
         /// </summary>
         public static void DrawTransPicTranslate(int x, int y, glpic_t pic)
         {
-            Drawer.TransPicTranslate(x + ((Scr.vid.width - 320) >> 1), y, pic, _TranslationTable);
+            Drawer.TransPicTranslate(x + ((Hud.Width - 320) >> 1), y, pic, _TranslationTable);
         }
 
         /// <summary>
@@ -242,9 +243,9 @@ namespace Quarp
         /// </summary>
         public static void Print(int cx, int cy, string str)
         {
-            for (int i = 0; i < str.Length; i++)
+            foreach (var t in str)
             {
-                DrawCharacter(cx, cy, str[i] + 128);
+                DrawCharacter(cx, cy, t + 128);
                 cx += 8;
             }
         }
@@ -254,7 +255,7 @@ namespace Quarp
         /// </summary>
         public static void DrawCharacter(int cx, int line, int num)
         {
-            Drawer.DrawCharacter(cx + ((Scr.vid.width - 320) >> 1), line, num);
+            Drawer.DrawCharacter(cx + ((Hud.Width - 320) >> 1), line, num);
         }
 
         /// <summary>

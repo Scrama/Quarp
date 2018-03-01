@@ -26,6 +26,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using Quarp.HudSystem;
 
 // refresh.h -- public interface to refresh functions
 // gl_rmisc.c
@@ -1127,10 +1128,10 @@ namespace Quarp
             //
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadIdentity();
-            int x = _RefDef.vrect.x * Scr.glWidth / Scr.vid.width;
-            int x2 = (_RefDef.vrect.x + _RefDef.vrect.width) * Scr.glWidth / Scr.vid.width;
-            int y = (Scr.vid.height - _RefDef.vrect.y) * Scr.glHeight / Scr.vid.height;
-            int y2 = (Scr.vid.height - (_RefDef.vrect.y + _RefDef.vrect.height)) * Scr.glHeight / Scr.vid.height;
+            int x = _RefDef.vrect.x * Scr.glWidth / Hud.Width;
+            int x2 = (_RefDef.vrect.x + _RefDef.vrect.width) * Scr.glWidth / Hud.Width;
+            int y = (Hud.Height - _RefDef.vrect.y) * Scr.glHeight / Hud.Height;
+            int y2 = (Hud.Height - (_RefDef.vrect.y + _RefDef.vrect.height)) * Scr.glHeight / Hud.Height;
 
             // fudge around because of frac screen scale
             if (x > 0)
