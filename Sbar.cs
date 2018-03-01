@@ -22,6 +22,7 @@
 
 using System;
 using System.Text;
+using Quarp.HudSystem;
 
 // sbar.h
 
@@ -241,7 +242,7 @@ namespace Quarp
         public static void Draw()
         {
             viddef_t vid = Scr.vid;
-            if (Scr.ConCurrent == vid.height)
+            if (Scr.ConCurrent == Hud.Height)
                 return;		// console is full screen
 
             //if (_Updates >= vid.numpages)
@@ -350,7 +351,7 @@ namespace Quarp
                 DrawNum(248, 0, cl.stats[QStats.STAT_AMMO], 3, cl.stats[QStats.STAT_AMMO] <= 10 ? 1 : 0);
             }
 
-            if (vid.width > 320)
+            if (Hud.Width > 320)
             {
                 if (Client.cl.gametype == Protocol.GAME_DEATHMATCH)
                     MiniDeathmatchOverlay();
@@ -425,7 +426,7 @@ namespace Quarp
             Scr.CopyEverithing = true;
 
             glpic_t pic = Drawer.CachePic("gfx/finale.lmp");
-            Drawer.DrawTransPic((Scr.vid.width - pic.width) / 2, 16, pic);
+            Drawer.DrawTransPic((Hud.Width - pic.width) / 2, 16, pic);
         }
 
         // Sbar_DrawInventory
@@ -653,9 +654,9 @@ namespace Quarp
             if (cl.gametype == Protocol.GAME_DEATHMATCH)
                 xofs = 0;
             else
-                xofs = (Scr.vid.width - 320) >> 1;
+                xofs = (Hud.Width - 320) >> 1;
 
-            int y = Scr.vid.height - SBAR_HEIGHT - 23;
+            int y = Hud.Height - SBAR_HEIGHT - 23;
 
             for (int i = 0; i < l; i++)
             {
@@ -695,9 +696,9 @@ namespace Quarp
         static void DrawPic(int x, int y, glpic_t pic)
         {
             if (Client.cl.gametype == Protocol.GAME_DEATHMATCH)
-                Drawer.DrawPic(x, y + (Scr.vid.height - SBAR_HEIGHT), pic);
+                Drawer.DrawPic(x, y + (Hud.Height - SBAR_HEIGHT), pic);
             else
-                Drawer.DrawPic(x + ((Scr.vid.width - 320) >> 1), y + (Scr.vid.height - SBAR_HEIGHT), pic);
+                Drawer.DrawPic(x + ((Hud.Width - 320) >> 1), y + (Hud.Height - SBAR_HEIGHT), pic);
         }
 
 
@@ -757,11 +758,11 @@ namespace Quarp
                 if (cl.gametype == Protocol.GAME_DEATHMATCH)
                     xofs = 113;
                 else
-                    xofs = ((Scr.vid.width - 320) >> 1) + 113;
+                    xofs = ((Hud.Width - 320) >> 1) + 113;
 
                 DrawPic(112, 0, _RTeamBord);
-                Drawer.Fill(xofs, Scr.vid.height - SBAR_HEIGHT + 3, 22, 9, top);
-                Drawer.Fill(xofs, Scr.vid.height - SBAR_HEIGHT + 12, 22, 9, bottom);
+                Drawer.Fill(xofs, Hud.Height - SBAR_HEIGHT + 3, 22, 9, top);
+                Drawer.Fill(xofs, Hud.Height - SBAR_HEIGHT + 12, 22, 9, bottom);
 
                 // draw number
                 string num = s.frags.ToString().PadLeft(3);
@@ -828,7 +829,7 @@ namespace Quarp
         // Sbar_DeathmatchOverlay
         static void MiniDeathmatchOverlay()
         {
-            if (Scr.vid.width < 512 || Sbar.Lines == 0)
+            if (Hud.Width < 512 || Sbar.Lines == 0)
                 return;
 
             Scr.CopyEverithing = true;
@@ -839,7 +840,7 @@ namespace Quarp
 
             // draw the text
             int l = _ScoreBoardLines;
-            int y = Scr.vid.height - Sbar.Lines;
+            int y = Hud.Height - Sbar.Lines;
             int numlines = Sbar.Lines / 8;
             if (numlines < 3)
                 return;
@@ -861,7 +862,7 @@ namespace Quarp
                 i = 0;
 
             int x = 324;
-            for (; i < _ScoreBoardLines && y < Scr.vid.height - 8; i++)
+            for (; i < _ScoreBoardLines && y < Hud.Height - 8; i++)
             {
                 int k = _FragSort[i];
                 scoreboard_t s = Client.cl.scores[k];
@@ -932,9 +933,9 @@ namespace Quarp
         static void DrawCharacter(int x, int y, int num)
         {
             if (Client.cl.gametype == Protocol.GAME_DEATHMATCH)
-                Drawer.DrawCharacter(x + 4, y + Scr.vid.height - SBAR_HEIGHT, num);
+                Drawer.DrawCharacter(x + 4, y + Hud.Height - SBAR_HEIGHT, num);
             else
-                Drawer.DrawCharacter(x + ((Scr.vid.width - 320) >> 1) + 4, y + Scr.vid.height - SBAR_HEIGHT, num);
+                Drawer.DrawCharacter(x + ((Hud.Width - 320) >> 1) + 4, y + Hud.Height - SBAR_HEIGHT, num);
         }
 
         // Sbar_ColorForMap
@@ -986,7 +987,7 @@ namespace Quarp
             // draw the text
             int l = _ScoreBoardLines;
 
-            int x = 80 + ((Scr.vid.width - 320) >> 1);
+            int x = 80 + ((Hud.Width - 320) >> 1);
             int y = 40;
             for (int i = 0; i < l; i++)
             {
@@ -1025,18 +1026,18 @@ namespace Quarp
         static void DrawTransPic(int x, int y, glpic_t pic)
         {
             if (Client.cl.gametype == Protocol.GAME_DEATHMATCH)
-                Drawer.DrawTransPic(x, y + (Scr.vid.height - SBAR_HEIGHT), pic);
+                Drawer.DrawTransPic(x, y + (Hud.Height - SBAR_HEIGHT), pic);
             else
-                Drawer.DrawTransPic(x + ((Scr.vid.width - 320) >> 1), y + (Scr.vid.height - SBAR_HEIGHT), pic);
+                Drawer.DrawTransPic(x + ((Hud.Width - 320) >> 1), y + (Hud.Height - SBAR_HEIGHT), pic);
         }
 
          // Sbar_DrawString
         static void DrawString(int x, int y, string str)
         {
             if (Client.cl.gametype == Protocol.GAME_DEATHMATCH)
-                Drawer.DrawString(x, y + Scr.vid.height - SBAR_HEIGHT, str);
+                Drawer.DrawString(x, y + Hud.Height - SBAR_HEIGHT, str);
             else
-                Drawer.DrawString(x + ((Scr.vid.width - 320) >> 1), y + Scr.vid.height - SBAR_HEIGHT, str);
+                Drawer.DrawString(x + ((Hud.Width - 320) >> 1), y + Hud.Height - SBAR_HEIGHT, str);
         }
 
         

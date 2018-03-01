@@ -61,33 +61,9 @@ namespace Quarp
         /// </summary>
         public static void MakeAliasModelDisplayLists(model_t m, aliashdr_t hdr)
         {
-
-            // TODO cut file caching
             _AliasModel = m;
             _AliasHdr = hdr;
 
-            //
-            // look for a cached version
-            //
-            string path = Path.ChangeExtension("glquake/" + Path.GetFileNameWithoutExtension(m.name), ".ms2");
-
-            DisposableWrapper<BinaryReader> file;
-            Common.FOpenFile(path, out file);
-            if (file != null)
-            {
-                using (file)
-                {
-                    BinaryReader reader = file.Object;
-                    _NumCommands = reader.ReadInt32();
-                    _NumOrder = reader.ReadInt32();
-                    for (int i = 0; i < _NumCommands; i++)
-                        _Commands[i] = reader.ReadInt32();
-                    for (int i = 0; i < _NumOrder; i++)
-                        _VertexOrder[i] = reader.ReadInt32();
-                }
-            }
-            else
-            {
                 //
                 // build it from scratch
                 //
@@ -95,22 +71,7 @@ namespace Quarp
 
                 BuildTris();		// trifans or lists
 
-                //
-                // save out the cached version
-                //
-                string fullpath = Path.Combine(Common.GameDir, path);
-                Stream fs = Sys.FileOpenWrite(fullpath, true);
-                if (fs != null)
-                    using (BinaryWriter writer = new BinaryWriter(fs, Encoding.ASCII))
-                    {
-                        writer.Write(_NumCommands);
-                        writer.Write(_NumOrder);
-                        for (int i = 0; i < _NumCommands; i++)
-                            writer.Write(_Commands[i]);
-                        for (int i = 0; i < _NumOrder; i++)
-                            writer.Write(_VertexOrder[i]);
-                    }
-            }
+          
 
             //
             // save the data out

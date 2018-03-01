@@ -435,7 +435,7 @@ namespace Quarp
             int h = Hud.Height;//_VidDef.height;
 
             refdef_t rdef = Render.RefDef;
-            rdef.vrect.width = (int)(_VidDef.width * size);
+            rdef.vrect.width = (int)(Hud.Width * size);
 	        if (rdef.vrect.width < 96)
 	        {
 		        size = 96.0f / rdef.vrect.width;
@@ -447,7 +447,7 @@ namespace Quarp
 		        rdef.vrect.height = h;
 	        else if (rdef.vrect.height > h)
                 rdef.vrect.height = h;
-	        rdef.vrect.x = (_VidDef.width - rdef.vrect.width) / 2;
+	        rdef.vrect.x = (Hud.Width - rdef.vrect.width) / 2;
 	        if (full)
 		        rdef.vrect.y = 0;
 	        else 
@@ -551,7 +551,7 @@ namespace Quarp
         static void DrawNotifyString()
         {
             int offset = 0;
-            int y = (int)(Scr.vid.height * 0.35);
+            int y = (int)(Hud.Height * 0.35);
 
             do
             {
@@ -564,7 +564,7 @@ namespace Quarp
                 int length = end - offset;
                 if (length > 0)
                 {
-                    int x = (vid.width - length * 8) / 2;
+                    int x = (Hud.Width - length * 8) / 2;
                     for (int j = 0; j < length; j++, x += 8)
                         Drawer.DrawCharacter(x, y, _NotifyString[offset + j]);
 
@@ -583,7 +583,7 @@ namespace Quarp
                 return;
 
             glpic_t pic = Drawer.CachePic("gfx/loading.lmp");
-            Drawer.DrawPic((vid.width - pic.width) / 2, (vid.height - 48 - pic.height) / 2, pic);
+            Drawer.DrawPic((Hud.Width - pic.width) / 2, (Hud.Height - 48 - pic.height) / 2, pic);
         }
 
         // SCR_CheckDrawCenterString
@@ -657,7 +657,7 @@ namespace Quarp
                 return;
 
             glpic_t pic = Drawer.CachePic("gfx/pause.lmp");
-            Drawer.DrawPic((vid.width - pic.width) / 2, (vid.height - 48 - pic.height) / 2, pic);
+            Drawer.DrawPic((Hud.Width - pic.width) / 2, (Hud.Height - 48 - pic.height) / 2, pic);
         }
 
         // SCR_DrawConsole
@@ -680,29 +680,28 @@ namespace Quarp
         // SCR_DrawCenterString
         static void DrawCenterString()
         {
-            int remaining;
-
             // the finale prints the characters one at a time
-            if (Client.cl.intermission > 0)
-                remaining = (int)(_PrintSpeed.Value * (Client.cl.time - _CenterTimeStart));
-            else
-                remaining = 9999;
+            var remaining = Client.cl.intermission > 0
+                ? (int) (_PrintSpeed.Value * (Client.cl.time - _CenterTimeStart))
+                : 9999;
 
-            int y = 48;
+            var y = 48;
             if (_CenterLines <= 4)
-                y = (int)(_VidDef.height * 0.35);
+                y = (int)(Hud.Height * 0.35);
 
-            string[] lines = _CenterString.Split('\n');
-            for (int i = 0; i < lines.Length; i++ )
+            var lines = _CenterString.Split('\n');
+
+            foreach (var l in lines)
             {
-                string line = lines[i].TrimEnd('\r');
-                int x = (vid.width - line.Length * 8) / 2;
+                var line = l.TrimEnd('\r');
+                var x = (Hud.Width - line.Length * 8) / 2;
 
-                for (int j = 0; j < line.Length; j++, x += 8)
+                foreach (var c in line)
                 {
-                    Drawer.DrawCharacter(x, y, line[j]);
+                    Drawer.DrawCharacter(x, y, c);
                     if (remaining-- <= 0)
                         return;
+                    x += 8;
                 }
                 y += 8;
             }
