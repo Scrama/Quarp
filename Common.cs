@@ -101,7 +101,7 @@ namespace Quarp
         static string[] _Argv;
         static string _Args; // com_cmdline
         static GameKind _GameKind; // qboolean		standard_quake = true, rogue, hipnotic;
-        static bool _IsModified; // com_modified
+        public static bool IsModified; // com_modified
         static bool _StaticRegistered; // static_registered
         static char[] _Slashes = new char[] { '/', '\\' };
         static string _Token; // com_token
@@ -611,7 +611,7 @@ namespace Quarp
             if (buf == null || buf.Length < 256)
             {
                 Con.Print("Playing shareware version.\n");
-                if (_IsModified)
+                if (IsModified)
                     Sys.Error("You must have the registered version to use modified games");
                 return;
             }
@@ -693,7 +693,7 @@ namespace Quarp
 	        i = CheckParm ("-game");
 	        if ((i > 0) && (i < _Argv.Length - 1))
 	        {
-                _IsModified = true;
+                IsModified = true;
 		        AddGameDirectory (basedir + "/" + _Argv[i + 1]);
 	        }
 
@@ -704,7 +704,7 @@ namespace Quarp
 	        i = CheckParm ("-path");
 	        if (i > 0)
 	        {
-                _IsModified = true;
+                IsModified = true;
                 _SearchPaths.Clear();
 		        while (++i < _Argv.Length)
 		        {
@@ -918,9 +918,9 @@ namespace Quarp
         {
             int count = 0;
             while(count < src.Length && src[count] != 0)
-                count++;
+                ++count;
 
-            return (count > 0 ? Encoding.ASCII.GetString(src, 0, count) : String.Empty);
+            return count > 0 ? Encoding.ASCII.GetString(src, 0, count) : string.Empty;
         }
 
         public static Vector3 ToVector(ref v3f v)

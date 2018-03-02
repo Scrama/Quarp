@@ -540,73 +540,112 @@ namespace Quarp
 	        Upload32(trans, width, height, mipmap, alpha);
         }
 
+        public static int LoadExternalTexture(string identifier, uint[] data, int width, int height, bool mipmap, bool alpha)
+        {
+            // see if the texture is allready present
+            if (!string.IsNullOrEmpty(identifier))
+            {
+                foreach (var glt in _glTextures)
+                {
+                    if (glt.identifier != identifier)
+                        continue;
+
+                    if (width != glt.width || height != glt.height)
+                        Sys.Error("GL_LoadTexture: cache mismatch!");
+                    return glt.texnum;
+                }
+            }
+
+            if (_NumTextures == _glTextures.Length)
+                Sys.Error("GL_LoadTexture: no more texture slots available!");
+
+            gltexture_t tex = new gltexture_t();
+            _glTextures[_NumTextures] = tex;
+            _NumTextures++;
+
+            tex.identifier = identifier;
+            tex.texnum = _TextureExtensionNumber;
+            tex.width = width;
+            tex.height = height;
+            tex.mipmap = mipmap;
+
+            Bind(tex.texnum);
+
+            Upload32(data, width, height, mipmap, alpha);
+
+            ++_TextureExtensionNumber;
+
+            return tex.texnum;
+        }
 
         // GL_Upload32
         static void Upload32(uint[] data, int width, int height, bool mipmap, bool alpha)
         {
-            int scaled_width, scaled_height;
+            var scaledWidth = 1;
+            var scaledHeight = 1;
 
-            for (scaled_width = 1; scaled_width < width; scaled_width <<= 1)
-                ;
-            for (scaled_height = 1; scaled_height < height; scaled_height <<= 1)
-                ;
+            while (scaledWidth < width)
+                scaledWidth <<= 1;
+            while (scaledHeight < height)
+                scaledHeight <<= 1;
 
-	        scaled_width >>= (int)_glPicMip.Value;
-	        scaled_height >>= (int)_glPicMip.Value;
+	        scaledWidth >>= (int)_glPicMip.Value;
+	        scaledHeight >>= (int)_glPicMip.Value;
 
-	        if (scaled_width > _glMaxSize.Value)
-                scaled_width = (int)_glMaxSize.Value;
-            if (scaled_height > _glMaxSize.Value)
-                scaled_height = (int)_glMaxSize.Value;
+	        if (scaledWidth > _glMaxSize.Value)
+                scaledWidth = (int)_glMaxSize.Value;
+            if (scaledHeight > _glMaxSize.Value)
+                scaledHeight = (int)_glMaxSize.Value;
 
 	        PixelInternalFormat samples = alpha ? _AlphaFormat : _SolidFormat;
             uint[] scaled;
             
-            _Texels += scaled_width * scaled_height;
+            _Texels += scaledWidth * scaledHeight;
 
-	        if (scaled_width == width && scaled_height == height)
+	        if (scaledWidth == width && scaledHeight == height)
 	        {
 		        if (!mipmap)
 		        {
-                    GCHandle h2 = GCHandle.Alloc(data, GCHandleType.Pinned);
+                    var h2 = GCHandle.Alloc(data, GCHandleType.Pinned);
                     try
                     {
-                        GL.TexImage2D(TextureTarget.Texture2D, 0, samples, scaled_width, scaled_height, 0,
+                        GL.TexImage2D(TextureTarget.Texture2D, 0, samples, scaledWidth, scaledHeight, 0,
                             PixelFormat.Rgba, PixelType.UnsignedByte, h2.AddrOfPinnedObject());
                     }
                     finally
                     {
                         h2.Free();
                     }
+                    //TODO wtf?
 			        goto Done;
 		        }
-                scaled = new uint[scaled_width * scaled_height]; // uint[1024 * 512];
+                scaled = new uint[scaledWidth * scaledHeight]; // uint[1024 * 512];
                 data.CopyTo(scaled, 0);
 	        }
 	        else
-		        ResampleTexture (data, width, height, out scaled, scaled_width, scaled_height);
+		        ResampleTexture (data, width, height, out scaled, scaledWidth, scaledHeight);
 
-            GCHandle h = GCHandle.Alloc(scaled, GCHandleType.Pinned);
+            var h = GCHandle.Alloc(scaled, GCHandleType.Pinned);
             try
             {
                 IntPtr ptr = h.AddrOfPinnedObject();
-                GL.TexImage2D(TextureTarget.Texture2D, 0, samples, scaled_width, scaled_height, 0,
+                GL.TexImage2D(TextureTarget.Texture2D, 0, samples, scaledWidth, scaledHeight, 0,
                     PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
                 ErrorCode err = GL.GetError(); // debug
                 if (mipmap)
                 {
                     int miplevel = 0;
-                    while (scaled_width > 1 || scaled_height > 1)
+                    while (scaledWidth > 1 || scaledHeight > 1)
                     {
-                        MipMap(scaled, scaled_width, scaled_height);
-                        scaled_width >>= 1;
-                        scaled_height >>= 1;
-                        if (scaled_width < 1)
-                            scaled_width = 1;
-                        if (scaled_height < 1)
-                            scaled_height = 1;
+                        MipMap(scaled, scaledWidth, scaledHeight);
+                        scaledWidth >>= 1;
+                        scaledHeight >>= 1;
+                        if (scaledWidth < 1)
+                            scaledWidth = 1;
+                        if (scaledHeight < 1)
+                            scaledHeight = 1;
                         miplevel++;
-                        GL.TexImage2D(TextureTarget.Texture2D, miplevel, samples, scaled_width, scaled_height, 0,
+                        GL.TexImage2D(TextureTarget.Texture2D, miplevel, samples, scaledWidth, scaledHeight, 0,
                             PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
                     }
                 }
@@ -662,9 +701,9 @@ namespace Quarp
             uint[] dest = src;
             int srcOffset = 0;
             int destOffset = 0;
-            for (int i = 0; i < height; i++)
+            for (int i = 0; i < height; ++i)
             {
-                for (int j = 0; j < width; j++)
+                for (int j = 0; j < width; ++j)
                 {
                     p1.ui0 = src[srcOffset];
                     int offset = srcOffset + 1;

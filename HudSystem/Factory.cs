@@ -34,7 +34,8 @@ namespace Quarp.HudSystem
 
             foreach (var dto in src)
             {
-                if (_map.TryGetValue(dto.ItemType, out var make))
+                Func<HudItemDto, HudItem> make;
+                if (_map.TryGetValue(dto.ItemType, out make))
                 {
                     //rescale screen position
                     list.Add(make(dto));
