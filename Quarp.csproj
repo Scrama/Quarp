@@ -120,6 +120,8 @@
     <Compile Include="HudSystem\HudItemDto.cs" />
     <Compile Include="HudSystem\HudEntry.cs" />
     <Compile Include="HudSystem\HudItem.cs" />
+    <Compile Include="Image\Loader.cs" />
+    <Compile Include="Image\Targa.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Keys.cs" />
     <Compile Include="MainForm.cs" />

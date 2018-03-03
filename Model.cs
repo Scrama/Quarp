@@ -76,30 +76,17 @@ namespace Quarp
         static trivertx_t[][] _PoseVerts = new trivertx_t[MAXALIASFRAMES][]; // poseverts
         static byte[] _Decompressed = new byte[BspFile.MAX_MAP_LEAFS/8]; // static byte decompressed[] from Mod_DecompressVis()
 
-        public static trivertx_t[][] PoseVerts
-        {
-            get { return _PoseVerts; }
-        }
-        public static stvert_t[] STVerts
-        {
-            get { return _STVerts; }
-        }
-        public static dtriangle_t[] Triangles
-        {
-            get { return _Triangles; }
-        }
-        public static aliashdr_t Header
-        {
-            get { return _Header; }
-        }
-        public static model_t Model
-        {
-            get { return _LoadModel; }
-        }
-        public static float SubdivideSize
-        {
-            get { return _glSubDivideSize.Value; }
-        }
+        public static trivertx_t[][] PoseVerts => _PoseVerts;
+
+        public static stvert_t[] STVerts => _STVerts;
+
+        public static dtriangle_t[] Triangles => _Triangles;
+
+        public static aliashdr_t Header => _Header;
+
+        public static model_t Model => _LoadModel;
+
+        public static float SubdivideSize => _glSubDivideSize.Value;
 
         /// <summary>
         /// Mod_Init
@@ -973,18 +960,34 @@ namespace Quarp
                 tx.name = Common.GetString(mt.name);//   memcpy (tx->name, mt->name, sizeof(tx.name));
                 tx.width = mt.width;
                 tx.height = mt.height;
-                for (int j = 0; j < BspFile.MIPLEVELS; j++)
-                    tx.offsets[j] = (int)mt.offsets[j] - miptex_t.SizeInBytes;
-                // the pixels immediately follow the structures
-                tx.pixels = new byte[pixels];
-                Buffer.BlockCopy(_ModBase, mtOffset + miptex_t.SizeInBytes, tx.pixels, 0, pixels);
 
-                if (tx.name != null && tx.name.StartsWith("sky"))// !Q_strncmp(mt->name,"sky",3))
-                    Render.InitSky(tx);
+                //TODO now we had a name, so can try to load external texture
+                var path = Image.Loader.FindTexture(tx.name);
+                if (!string.IsNullOrEmpty(path))
+                {
+                    int h;
+                    int w;
+                    var data = Image.Loader.Load(path, out h, out w);
+                    tx.gl_texturenum = Drawer.LoadExternalTexture(tx.name, data, w, h, true, false);
+                }
                 else
                 {
-                    tx.gl_texturenum = Drawer.LoadTexture(tx.name, (int)tx.width, (int)tx.height,
-                        new ByteArraySegment(tx.pixels), true, false);
+                    for (var j = 0; j < BspFile.MIPLEVELS; ++j)
+                    {
+                        tx.offsets[j] = (int) mt.offsets[j] - miptex_t.SizeInBytes;
+                    }
+
+                    // the pixels immediately follow the structures
+                    tx.pixels = new byte[pixels];
+                    Buffer.BlockCopy(_ModBase, mtOffset + miptex_t.SizeInBytes, tx.pixels, 0, pixels);
+
+                    if (tx.name != null && tx.name.StartsWith("sky"))
+                        Render.InitSky(tx);
+                    else
+                    {
+                        tx.gl_texturenum = Drawer.LoadTexture(tx.name, (int) tx.width, (int) tx.height,
+                            new ByteArraySegment(tx.pixels), true, false);
+                    }
                 }
             }
 
