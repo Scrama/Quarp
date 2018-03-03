@@ -243,7 +243,6 @@ namespace Quarp.HudSystem
         {
             Con.Print("--\n");
             Con.Print($"GL  | [{Scr.glX} {Scr.glY}] [{Scr.glWidth} {Scr.glHeight}]\n");
-            Con.Print($"Vid | [{Scr.VidDef.width} {Scr.VidDef.height}]\n");
             Con.Print($"Ref | [{Render.RefDef.vrect.x} {Render.RefDef.vrect.y}] [{Render.RefDef.vrect.width} {Render.RefDef.vrect.height}]\n");
             Con.Print($"Hud | [{Width} {Height}]\n");
             Con.Print($"Con | [{Scr.ConLines} {Scr.ConCurrent}]\n");
@@ -305,8 +304,7 @@ namespace Quarp.HudSystem
                 Con.Print(ex.Message);
                 SetDefaultConfig();
             }
-
-            Vid.SetHudScale();
+            Scr.vid.recalc_refdef = true;
         }
 
         private static void SetDefaultConfig()

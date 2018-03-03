@@ -26,6 +26,7 @@ using System.Text;
 using System.Drawing;
 using OpenTK;
 using OpenTK.Graphics;
+using Quarp.HudSystem;
 
 // view.h
 // view.c -- player eye positioning
@@ -484,19 +485,6 @@ namespace Quarp
             view.origin.Z += cl.viewheight;
             view.origin += forward * bob * 0.4f;
             view.origin.Z += bob;
-
-            // fudge position around to keep amount of weapon visible
-            // roughly equal with different FOV
-            float viewSize = Scr.ViewSize.Value; // scr_viewsize
-
-            /*if (viewSize == 100)
-                view.origin.Z += 3;
-            else if (viewSize == 90)
-                view.origin.Z += 2;
-            else if (viewSize == 80)
-                view.origin.Z += 1;
-            else if (viewSize == 70)
-                view.origin.Z += 0.5f;*/
 
             view.model = cl.model_precache[cl.stats[QStats.STAT_WEAPON]];
             view.frame = cl.stats[QStats.STAT_WEAPONFRAME];

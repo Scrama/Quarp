@@ -672,21 +672,19 @@ namespace Quarp
             {
                 DisableMultitexture();
 
-                if (_SkyChain != null)
-                {
-                    DrawSkyChain(_SkyChain);
-                    _SkyChain = null;
-                }
+                if (_SkyChain == null)
+                    return;
+
+                DrawSkyChain(_SkyChain);
+                _SkyChain = null;
                 return;
             }
             model_t world = Client.cl.worldmodel;
             for (int i = 0; i < world.numtextures; i++)
             {
                 texture_t t = world.textures[i];
-                if (t == null)
-                    continue;
 
-                msurface_t s = t.texturechain;
+                msurface_t s = t?.texturechain;
                 if (s == null)
                     continue;
 
