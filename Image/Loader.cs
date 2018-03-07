@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Quarp.Image
 {
@@ -40,7 +42,7 @@ namespace Quarp.Image
             var ext = Path.GetExtension(path)?.ToLower().TrimStart('.');
             byte[] result;
             if (new[] {"jpg", "jpeg", "png"}.Contains(ext))
-                result = LoadJpg(path, out height, out width);
+                result = LoadMime(path, out height, out width);
             else if (ext == "tga")
                 result = LoadTga(path, out height, out width);
             else
@@ -64,27 +66,16 @@ namespace Quarp.Image
             }
         }
 
-        private static byte[] LoadJpg(string path, out int height, out int width)
+        private static byte[] LoadMime(string path, out int height, out int width)
         {
-            using (var jpg = System.Drawing.Image.FromFile(path))
+            using (var img = new Bitmap(path))
             {
-                using (var ms = new MemoryStream())
-                {
-                    jpg.Save(ms, ImageFormat.Bmp);
-
-                    height = jpg.Height;
-                    width = jpg.Width;
-
-                    var buffer = new byte[4];
-                    ms.Seek(10, SeekOrigin.Begin);
-                    ms.Read(buffer, 0, buffer.Length);
-                    var ofs = BitConverter.ToInt32(buffer, 0);
-
-                    buffer = new byte[ms.Length - ofs];
-                    ms.Seek(ofs, SeekOrigin.Begin);
-                    ms.Read(buffer, 0, buffer.Length);
-                    return buffer;
-                }
+                width = img.Width;
+                height = img.Height;
+                var result = new byte[width*height*4];
+                var bmp = img.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+                Marshal.Copy(bmp.Scan0, result, 0, result.Length);
+                return result;
             }
         }
 
