@@ -9,10 +9,10 @@ namespace Quarp.Image
     {
         private static readonly string[] Patterns =
         {
-            $"{0}\\textures\\{1}.tga",
-            $"{0}\\textures\\{1}.png",
-            $"{0}\\textures\\{1}.jpg",
-            $"{0}\\textures\\{1}.jpeg"
+            "{0}\\textures\\{1}.tga",
+            "{0}\\textures\\{1}.png",
+            "{0}\\textures\\{1}.jpg",
+            "{0}\\textures\\{1}.jpeg"
         };
 
         public static string FindTexture(string name)

@@ -22,6 +22,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 using OpenTK.Graphics.OpenGL;
@@ -154,7 +156,7 @@ namespace Quarp
         // Draw_Init
         public static void Init()
         {
-            for (int i = 0; i < _MenuCachePics.Length; i++)
+            for (var i = 0; i < _MenuCachePics.Length; ++i)
                 _MenuCachePics[i] = new cachepic_t();
 
             if (_glNoBind == null)
@@ -165,7 +167,7 @@ namespace Quarp
             }
 
 	        // 3dfx can only handle 256 wide textures
-            string renderer = GL.GetString(StringName.Renderer);
+            var renderer = GL.GetString(StringName.Renderer);
             if (renderer.Contains("3dfx") || renderer.Contains("Glide"))
                 Cvar.Set("gl_max_size", "256");
 
@@ -177,7 +179,7 @@ namespace Quarp
 	        // it into a texture
 	        int offset = Wad.GetLumpNameOffset("conchars");
             byte[] draw_chars = Wad.Data; // draw_chars
-            for (int i = 0; i < 256 * 64; i++)
+            for (var i = 0; i < 256 * 64; ++i)
             {
 		        if (draw_chars[offset + i] == 0)
 			        draw_chars[offset + i] = 255;	// proper transparent color
@@ -223,6 +225,15 @@ namespace Quarp
 	        //
 	        _Disc = PicFromWad ("disc");
 	        _BackTile = PicFromWad ("backtile");
+
+            Cmd.Add("r_dumptex", () =>
+            {
+                File.WriteAllText(
+                    $"{Common.GameDir}\\gltextures.txt",
+                    string.Join("\n", _glTextures.Where(t => t!= null).Select(t => $"{t.identifier} {t.width}x{t.height}"))
+                    );
+                Con.Print($"{Common.GameDir}\\gltextures.txt");
+            });
         }
 
         public static void SetTextureFilters(TextureMinFilter min, TextureMagFilter mag)
@@ -547,6 +558,8 @@ namespace Quarp
             {
                 foreach (var glt in _glTextures)
                 {
+                    if (glt == null)
+                        break;
                     if (glt.identifier != identifier)
                         continue;
 

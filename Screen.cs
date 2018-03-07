@@ -450,7 +450,7 @@ namespace Quarp
             rdef.fov_y = _Fov.Value;
 	        rdef.fov_x = CalcFov (_Fov.Value, rdef.vrect.height, rdef.vrect.width);
 
-            Con.Print($"fov {rdef.fov_x}");
+            Con.DPrint($"fov {rdef.fov_x}\n");
 
             _VRect = rdef.vrect;
         }

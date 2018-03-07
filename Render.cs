@@ -80,6 +80,7 @@ namespace Quarp
         static Cvar _glKeepTJunctions;// = { "gl_keeptjunctions", "0" };
         static Cvar _glReportTJunctions;// = { "gl_reporttjunctions", "0" };
         static Cvar _glDoubleEyes;// = { "gl_doubleeys", "1" };
+        private static Cvar _rViewModelShift;
 
         static int _PlayerTextures; // playertextures	// up to 16 color translated skins
         static bool _CacheThrash; // r_cache_thrash	// compatability
@@ -167,6 +168,7 @@ namespace Quarp
                 _WaterAlpha = new Cvar("r_wateralpha", "1");
                 _Dynamic = new Cvar("r_dynamic", "1");
                 _NoVis = new Cvar("r_novis", "0");
+                _rViewModelShift = new Cvar("r_viewmodelshift", "");
 
                 _glFinish = new Cvar("gl_finish", "0");
                 _glClear = new Cvar("gl_clear", "0");
@@ -426,11 +428,31 @@ namespace Quarp
 
             var bkp = _rInterpolateModelTransform.Value;
             _rInterpolateModelTransform.Set("0");
-            DrawAliasModel(_CurrentEntity);
+            if (_shiftString != _rViewModelShift.String)
+            {
+                try
+                {
+                    var p = _rViewModelShift.String.Split(new[] {' '}, 3);
+                    var v = new Vector3(float.Parse(p[0]), float.Parse(p[1]), float.Parse(p[2]));
+                    _viewModelShift = v;
+                    _shiftString = _rViewModelShift.String;
+                }
+                catch (Exception e)
+                {
+                    Con.Print($"Can't interpret r_viewmodelshift {_rViewModelShift.String} : {e.Message}\n");
+                    _rViewModelShift.Set(_shiftString);
+                }
+            }
+
+            DrawAliasModel(_CurrentEntity, _viewModelShift);
             _rInterpolateModelTransform.Set(bkp.ToString());
 
             GL.DepthRange(_glDepthMin, _glDepthMax);
         }
+
+        private static string _shiftString;
+        private static Vector3 _viewModelShift = new Vector3(0, 0, 0);
+        private static readonly Vector3 ZeroShift = new Vector3(0, 0, 0);
 
         /// <summary>
         /// R_RenderScene
@@ -597,10 +619,15 @@ namespace Quarp
             return pspriteframe;
         }
 
+        private static void DrawAliasModel(entity_t e)
+        {
+            DrawAliasModel(e, ZeroShift);
+        }
+
         /// <summary>
         /// R_DrawAliasModel
         /// </summary>
-        private static void DrawAliasModel(entity_t e)
+        private static void DrawAliasModel(entity_t e, Vector3 shift)
         {
             model_t clmodel = _CurrentEntity.model;
             Vector3 mins = _CurrentEntity.origin + clmodel.mins;
@@ -610,7 +637,7 @@ namespace Quarp
                 return;
 
             _EntOrigin = _CurrentEntity.origin;
-            _ModelOrg = Render.Origin - _EntOrigin;
+            _ModelOrg = Origin - _EntOrigin;
 
             //
             // get lighting information
@@ -690,7 +717,7 @@ namespace Quarp
             }
             else
             {
-                GL.Translate(paliashdr.scale_origin);
+                GL.Translate(paliashdr.scale_origin + shift);
                 GL.Scale(paliashdr.scale);
             }
 

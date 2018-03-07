@@ -961,8 +961,11 @@ namespace Quarp
                 tx.width = mt.width;
                 tx.height = mt.height;
 
-                //TODO now we had a name, so can try to load external texture
-                var path = Image.Loader.FindTexture(tx.name);
+                // first look at map specific folder, then in common
+                var path = Image.Loader.FindTexture($"{Server.sv.name}\\{tx.name}");
+                if (string.IsNullOrEmpty(path))
+                    path = Image.Loader.FindTexture(tx.name);
+
                 if (!string.IsNullOrEmpty(path))
                 {
                     int h;
