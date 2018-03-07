@@ -295,7 +295,7 @@ namespace Quarp
             for (glpoly_t p = fa.polys; p != null; p = p.next)
             {
                 GL.Begin(PrimitiveType.Polygon);
-                for (int i = 0; i < p.numverts; i++)
+                for (int i = 0; i < p.numverts; ++i)
                 {
                     float[] v = p.verts[i];
                     Vector3 dir = new Vector3(v[0] - Render.Origin.X, v[1] - Render.Origin.Y, v[2] - Render.Origin.Z);
@@ -314,11 +314,19 @@ namespace Quarp
             }
         }
 
+        private static void DrawSkyBox()
+        {
+            
+        }
+
         /// <summary>
         /// R_DrawSkyChain
         /// </summary>
         private static void DrawSkyChain(msurface_t s)
         {
+            return;
+
+
             DisableMultitexture();
 
             // used when gl_texsort is on
@@ -330,7 +338,18 @@ namespace Quarp
                 EmitSkyPolys(fa);
 
             GL.Enable(EnableCap.Blend);
+            GL.Color4(1, 1, 1, 0.5);
+            GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Modulate);
+
             Drawer.Bind(_AlphaSkyTexture);
+            _SpeedScale = (float)Host.RealTime * 12;
+            _SpeedScale -= (int)_SpeedScale & ~127;
+
+            for (msurface_t fa = s; fa != null; fa = fa.texturechain)
+                EmitSkyPolys(fa);
+
+            GL.Color4(1, 1, 1, 0.4);
+
             _SpeedScale = (float)Host.RealTime * 16;
             _SpeedScale -= (int)_SpeedScale & ~127;
 
@@ -338,6 +357,8 @@ namespace Quarp
                 EmitSkyPolys(fa);
 
             GL.Disable(EnableCap.Blend);
+            GL.Color4(1, 1, 1, 1);
+            GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Replace);
         }
 
         /// <summary>

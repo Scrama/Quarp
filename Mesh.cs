@@ -64,33 +64,29 @@ namespace Quarp
             _AliasModel = m;
             _AliasHdr = hdr;
 
-                //
-                // build it from scratch
-                //
-                Con.Print("meshing {0}...\n", m.name);
-
-                BuildTris();		// trifans or lists
-
-          
-
             //
-            // save the data out
+            // build it from scratch
             //
+            Con.DPrint("meshing {0}...\n", m.name);
+
+            BuildTris(); // trifans or lists
             _AliasHdr.poseverts = _NumOrder;
 
-            int[] cmds = new int[_NumCommands]; //Hunk_Alloc (numcommands * 4);
+            var cmds = new int[_NumCommands]; //Hunk_Alloc (numcommands * 4);
             _AliasHdr.commands = cmds; // in bytes??? // (byte*)cmds - (byte*)paliashdr;
             Buffer.BlockCopy(_Commands, 0, cmds, 0, _NumCommands * 4); //memcpy (cmds, commands, numcommands * 4);
 
-            trivertx_t[][] poseverts = Mod.PoseVerts;
-            trivertx_t[] verts = new trivertx_t[_AliasHdr.numposes * _AliasHdr.poseverts]; // Hunk_Alloc (paliashdr->numposes * paliashdr->poseverts * sizeof(trivertx_t) );
+            var poseverts = Mod.PoseVerts;
+            var verts = new trivertx_t[_AliasHdr.numposes *_AliasHdr.poseverts];
+            // Hunk_Alloc (paliashdr->numposes * paliashdr->poseverts * sizeof(trivertx_t) );
+
             _AliasHdr.posedata = verts; // (byte*)verts - (byte*)paliashdr;
-            int offset = 0;
-            for (int i = 0; i < _AliasHdr.numposes; i++)
-                for (int j = 0; j < _NumOrder; j++)
-                {
-                    verts[offset++] = poseverts[i][_VertexOrder[j]];  // *verts++ = poseverts[i][vertexorder[j]];
-                }
+            var offset = 0;
+            for (var i = 0; i < _AliasHdr.numposes; ++i)
+            for (var j = 0; j < _NumOrder; ++j)
+            {
+                verts[offset++] = poseverts[i][_VertexOrder[j]]; // *verts++ = poseverts[i][vertexorder[j]];
+            }
         }
 
         /// <summary>
@@ -113,36 +109,34 @@ namespace Quarp
             _NumOrder = 0;
             _NumCommands = 0;
             Array.Clear(_Used, 0, _Used.Length); // memset (used, 0, sizeof(used));
-            int besttype = 0, len;
-            for (int i = 0; i < _AliasHdr.numtris; i++)
+            int besttype = 0;
+            for (int i = 0; i < _AliasHdr.numtris; ++i)
             {
                 // pick an unused triangle and start the trifan
                 if (_Used[i] != 0)
                     continue;
 
                 int bestlen = 0;
-                for (int type = 0; type < 2; type++)
+                for (int type = 0; type < 2; ++type)
                 {
-                    for (int startv = 0; startv < 3; startv++)
+                    for (int startv = 0; startv < 3; ++startv)
                     {
-                        if (type == 1)
-                            len = StripLength(i, startv);
-                        else
-                            len = FanLength(i, startv);
-                        if (len > bestlen)
-                        {
-                            besttype = type;
-                            bestlen = len;
-                            for (int j = 0; j < bestlen + 2; j++)
-                                bestverts[j] = _StripVerts[j];
-                            for (int j = 0; j < bestlen; j++)
-                                besttris[j] = _StripTris[j];
-                        }
+                        var len = type == 1 ? StripLength(i, startv) : FanLength(i, startv);
+                        if (len <= bestlen)
+                            continue;
+
+                        besttype = type;
+                        bestlen = len;
+
+                        for (int j = 0; j < bestlen + 2; ++j)
+                            bestverts[j] = _StripVerts[j];
+                        for (int j = 0; j < bestlen; ++j)
+                            besttris[j] = _StripTris[j];
                     }
                 }
 
                 // mark the tris on the best strip as used
-                for (int j = 0; j < bestlen; j++)
+                for (int j = 0; j < bestlen; ++j)
                     _Used[besttris[j]] = 1;
 
                 if (besttype == 1)
@@ -151,7 +145,7 @@ namespace Quarp
                     _Commands[_NumCommands++] = -(bestlen + 2);
 
                 Union4b uval = Union4b.Empty;
-                for (int j = 0; j < bestlen + 2; j++)
+                for (int j = 0; j < bestlen + 2; ++j)
                 {
                     // emit a vertex into the reorder buffer
                     int k = bestverts[j];

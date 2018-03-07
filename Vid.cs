@@ -264,15 +264,8 @@ namespace Quarp
 
             InitOpenGL();
 
-            Initialized = true;
-        }
-
-        public static void SetHudScale()
-        {
-            //TODO Remove
-            Scr.vid.height = HudSystem.Hud.Height;
-            Scr.vid.width = HudSystem.Hud.Width;
             Scr.vid.recalc_refdef = true;
+            Initialized = true;
         }
 
         /// <summary>
@@ -376,8 +369,6 @@ namespace Quarp
                 form.WindowBorder = WindowBorder.Hidden;
             }
 
-            SetHudScale();
-            
             Scr.vid.numpages = 2;
             
             CDAudio.Resume();
@@ -581,8 +572,6 @@ namespace Quarp
         public byte[] colormap;		// 256 * VID_GRADES size
         public int fullbright;		// index of first fullbright color
         public int rowbytes; // unsigned	// may be > width if displayed in a window
-        public int width; // unsigned		
-        public int height; // unsigned
         public float aspect;		// width / height -- < 0 is taller than wide
         public int numpages;
         public bool recalc_refdef;	// if true, recalc vid-based stuff

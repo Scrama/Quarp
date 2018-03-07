@@ -115,7 +115,7 @@ namespace Quarp
             if (_ViewSize == null)
             {
                 _ViewSize = new Cvar("viewsize", "100", true);
-                _Fov = new Cvar("fov", "90");	// 10 - 170
+                _Fov = new Cvar("fov", "80");	// 10 - 170
                 _ConSpeed = new Cvar("scr_conspeed", "3000");
                 _CenterTime = new Cvar("scr_centertime", "2");
                 _ShowRam = new Cvar("showram", "1");
@@ -443,31 +443,24 @@ namespace Quarp
 	        }
 
 	        rdef.vrect.height = (int)(h * size);
-	        if (rdef.vrect.height > h)
-		        rdef.vrect.height = h;
-	        else if (rdef.vrect.height > h)
-                rdef.vrect.height = h;
+
 	        rdef.vrect.x = (Hud.Width - rdef.vrect.width) / 2;
-	        if (full)
-		        rdef.vrect.y = 0;
-	        else 
-		        rdef.vrect.y = (h - rdef.vrect.height) / 2;
+            rdef.vrect.y = full ? 0 : (h - rdef.vrect.height) / 2;
 
-	        rdef.fov_x = _Fov.Value;
-	        rdef.fov_y = CalcFov (rdef.fov_x, rdef.vrect.width, rdef.vrect.height);
+            rdef.fov_y = _Fov.Value;
+	        rdef.fov_x = CalcFov (_Fov.Value, rdef.vrect.height, rdef.vrect.width);
 
-	        _VRect = rdef.vrect;
+            Con.Print($"fov {rdef.fov_x}");
+
+            _VRect = rdef.vrect;
         }
 
         
         // CalcFov
-        static float CalcFov(float fov_x, float width, float height)
+        private static float CalcFov(float fov, float width, float height)
         {
-            if (fov_x < 1 || fov_x > 179)
-                Sys.Error("Bad fov: {0}", fov_x);
-
-            double x = width / Math.Tan(fov_x / 360.0 * Math.PI);
-            double a = Math.Atan(height / x);
+            var x = width / Math.Tan(fov / 360.0 * Math.PI);
+            var a = Math.Atan(height / x);
             a = a * 360.0 / Math.PI;
             return (float)a;
         }
