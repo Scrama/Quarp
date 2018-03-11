@@ -59,13 +59,13 @@ namespace Quarp
             }
 
             for (int i = 0; i < _EFrags.Length; i++)
-                _EFrags[i] = new efrag_t();
+                _EFrags[i] = new EfragT();
 
             for (int i = 0; i < _Entities.Length; i++)
-                _Entities[i] = new entity_t();
+                _Entities[i] = new EntityT();
 
             for (int i = 0; i < _StaticEntities.Length; i++)
-                _StaticEntities[i] = new entity_t();
+                _StaticEntities[i] = new EntityT();
 
             for (int i = 0; i < _DLights.Length; i++)
                 _DLights[i] = new dlight_t();
@@ -197,14 +197,14 @@ namespace Quarp
         {
 	        for (int i=0; i< _State.num_entities; i++)
 	        {
-                entity_t ent = _Entities[i];
+                EntityT ent = _Entities[i];
                 Con.Print("{0:d3}:", i);
-		        if (ent.model == null)
+		        if (ent.Model == null)
 		        {
 			        Con.Print("EMPTY\n");
 			        continue;
 		        }
-		        Con.Print("{0}:{1:d2}  ({2}) [{3}]\n", ent.model.name, ent.frame, ent.origin, ent.angles);
+		        Con.Print("{0}:{1:d2}  ({2}) [{3}]\n", ent.Model.name, ent.Frame, ent.Origin, ent.Angles);
 	        }
         }
 
@@ -322,39 +322,39 @@ namespace Quarp
             // start on the entity after the world
             for (int i = 1; i < cl.num_entities; i++)
             {
-                entity_t ent = _Entities[i];
-                if (ent.model == null)
+                EntityT ent = _Entities[i];
+                if (ent.Model == null)
                 {
                     // empty slot
-                    if (ent.forcelink)
+                    if (ent.Forcelink)
                         Render.RemoveEfrags(ent);	// just became empty
                     continue;
                 }
 
                 // if the object wasn't included in the last packet, remove it
-                if (ent.msgtime != cl.mtime[0])
+                if (ent.Msgtime != cl.mtime[0])
                 {
-                    ent.model = null;
+                    ent.Model = null;
                     ent.FrameStartTime = 0;
                     ent.TranslateStartTime = 0;
                     ent.RotateStartTime = 0;
                     continue;
                 }
 
-                Vector3 oldorg = ent.origin;
+                Vector3 oldorg = ent.Origin;
 
-                if (ent.forcelink)
+                if (ent.Forcelink)
                 {	
                     // the entity was not updated in the last message
                     // so move to the final spot
-                    ent.origin = ent.msg_origins[0];
-                    ent.angles = ent.msg_angles[0];
+                    ent.Origin = ent.MsgOrigins[0];
+                    ent.Angles = ent.MsgAngles[0];
                 }
                 else
                 {
                     // if the delta is large, assume a teleport and don't lerp
                     float f = frac;
-                    Vector3 delta = ent.msg_origins[0] - ent.msg_origins[1];
+                    Vector3 delta = ent.MsgOrigins[0] - ent.MsgOrigins[1];
                     if (Math.Abs(delta.X) > 100 || Math.Abs(delta.Y) > 100 || Math.Abs(delta.Z) > 100)
                         f = 1; // assume a teleportation, not a motion
 
@@ -368,69 +368,69 @@ namespace Quarp
                     }
                     
                     // interpolate the origin and angles
-                    ent.origin = ent.msg_origins[1] + f * delta;
-                    Vector3 angleDelta = ent.msg_angles[0] - ent.msg_angles[1];
+                    ent.Origin = ent.MsgOrigins[1] + f * delta;
+                    Vector3 angleDelta = ent.MsgAngles[0] - ent.MsgAngles[1];
                     Mathlib.CorrectAngles180(ref angleDelta);
-                    ent.angles = ent.msg_angles[1] + f * angleDelta;
+                    ent.Angles = ent.MsgAngles[1] + f * angleDelta;
                 }
 
                 // rotate binary objects locally
-                if ((ent.model.flags & EF.EF_ROTATE) != 0)
-                    ent.angles.Y = bobjrotate;
+                if ((ent.Model.flags & EF.EF_ROTATE) != 0)
+                    ent.Angles.Y = bobjrotate;
 
-                if ((ent.effects & EntityEffects.EF_BRIGHTFIELD) != 0)
+                if ((ent.Effects & EntityEffects.EF_BRIGHTFIELD) != 0)
                     Render.EntityParticles(ent);
 
-                if ((ent.effects & EntityEffects.EF_MUZZLEFLASH) != 0)
+                if ((ent.Effects & EntityEffects.EF_MUZZLEFLASH) != 0)
                 {
                     dlight_t dl = AllocDlight(i);
-                    dl.origin = ent.origin;
+                    dl.origin = ent.Origin;
                     dl.origin.Z += 16;
                     Vector3 fv, rv, uv;
-                    Mathlib.AngleVectors(ref ent.angles, out fv, out rv, out uv);
+                    Mathlib.AngleVectors(ref ent.Angles, out fv, out rv, out uv);
                     dl.origin += fv * 18;
                     dl.radius = 200 + (Sys.Random() & 31);
                     dl.minlight = 32;
                     dl.die = (float)cl.time + 0.1f;
                 }
-                if ((ent.effects & EntityEffects.EF_BRIGHTLIGHT) != 0)
+                if ((ent.Effects & EntityEffects.EF_BRIGHTLIGHT) != 0)
                 {
                     dlight_t dl = AllocDlight(i);
-                    dl.origin = ent.origin;
+                    dl.origin = ent.Origin;
                     dl.origin.Z += 16;
                     dl.radius = 400 + (Sys.Random() & 31);
                     dl.die = (float)cl.time + 0.001f;
                 }
-                if ((ent.effects & EntityEffects.EF_DIMLIGHT) != 0)
+                if ((ent.Effects & EntityEffects.EF_DIMLIGHT) != 0)
                 {
                     dlight_t dl = AllocDlight(i);
-                    dl.origin = ent.origin;
+                    dl.origin = ent.Origin;
                     dl.radius = 200 + (Sys.Random() & 31);
                     dl.die = (float)cl.time + 0.001f;
                 }
 
-                if ((ent.model.flags & EF.EF_GIB) != 0)
-                    Render.RocketTrail(ref oldorg, ref ent.origin, 2);
-                else if ((ent.model.flags & EF.EF_ZOMGIB) != 0)
-                    Render.RocketTrail(ref oldorg, ref ent.origin, 4);
-                else if ((ent.model.flags & EF.EF_TRACER) != 0)
-                    Render.RocketTrail(ref oldorg, ref ent.origin, 3);
-                else if ((ent.model.flags & EF.EF_TRACER2) != 0)
-                    Render.RocketTrail(ref oldorg, ref ent.origin, 5);
-                else if ((ent.model.flags & EF.EF_ROCKET) != 0)
+                if ((ent.Model.flags & EF.EF_GIB) != 0)
+                    Render.RocketTrail(ref oldorg, ref ent.Origin, 2);
+                else if ((ent.Model.flags & EF.EF_ZOMGIB) != 0)
+                    Render.RocketTrail(ref oldorg, ref ent.Origin, 4);
+                else if ((ent.Model.flags & EF.EF_TRACER) != 0)
+                    Render.RocketTrail(ref oldorg, ref ent.Origin, 3);
+                else if ((ent.Model.flags & EF.EF_TRACER2) != 0)
+                    Render.RocketTrail(ref oldorg, ref ent.Origin, 5);
+                else if ((ent.Model.flags & EF.EF_ROCKET) != 0)
                 {
-                    Render.RocketTrail(ref oldorg, ref ent.origin, 0);
+                    Render.RocketTrail(ref oldorg, ref ent.Origin, 0);
                     dlight_t dl = AllocDlight(i);
-                    dl.origin = ent.origin;
+                    dl.origin = ent.Origin;
                     dl.radius = 200;
                     dl.die = (float)cl.time + 0.01f;
                 }
-                else if ((ent.model.flags & EF.EF_GRENADE) != 0)
-                    Render.RocketTrail(ref oldorg, ref ent.origin, 1);
-                else if ((ent.model.flags & EF.EF_TRACER3) != 0)
-                    Render.RocketTrail(ref oldorg, ref ent.origin, 6);
+                else if ((ent.Model.flags & EF.EF_GRENADE) != 0)
+                    Render.RocketTrail(ref oldorg, ref ent.Origin, 1);
+                else if ((ent.Model.flags & EF.EF_TRACER3) != 0)
+                    Render.RocketTrail(ref oldorg, ref ent.Origin, 6);
 
-                ent.forcelink = false;
+                ent.Forcelink = false;
 
                 if (i == cl.viewentity && !Chase.IsActive)
                     continue;
@@ -496,9 +496,9 @@ namespace Quarp
             cls.message.Clear();
 
             // clear other arrays
-            foreach (efrag_t ef in _EFrags)
+            foreach (EfragT ef in _EFrags)
                 ef.Clear();
-            foreach (entity_t et in _Entities)
+            foreach (EntityT et in _Entities)
                 et.Clear();
 
             foreach (dlight_t dl in _DLights)
@@ -506,7 +506,7 @@ namespace Quarp
             
             Array.Clear(_LightStyle, 0, _LightStyle.Length);
 
-            foreach (entity_t et in _TempEntities)
+            foreach (EntityT et in _TempEntities)
                 et.Clear();
 
             foreach (beam_t b in _Beams)
@@ -517,8 +517,8 @@ namespace Quarp
             //
             cl.free_efrags = _EFrags[0];// cl_efrags;
             for (int i = 0; i < MAX_EFRAGS - 1; i++)
-                _EFrags[i].entnext = _EFrags[i + 1];
-            _EFrags[MAX_EFRAGS - 1].entnext = null;
+                _EFrags[i].Entnext = _EFrags[i + 1];
+            _EFrags[MAX_EFRAGS - 1].Entnext = null;
         }
 
         /// <summary>

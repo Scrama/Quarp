@@ -259,7 +259,7 @@ namespace Quarp
         /// </summary>
         public byte[] compressed_vis; // byte*
         public int visofs; // added by Uze
-        public efrag_t efrags;
+        public EfragT efrags;
 
         /// <summary>
         /// loadmodel->marksurfaces

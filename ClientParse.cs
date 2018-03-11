@@ -362,16 +362,16 @@ namespace Quarp
             else
                 num = Net.Reader.ReadByte();
 
-            entity_t ent = EntityNum(num);
+            EntityT ent = EntityNum(num);
             for (i = 0; i < 16; i++)
                 if ((bits & (1 << i)) != 0)
                     _BitCounts[i]++;
 
             bool forcelink = false;
-            if (ent.msgtime != cl.mtime[1])
+            if (ent.Msgtime != cl.mtime[1])
                 forcelink = true;	// no previous frame to lerp from
 
-            ent.msgtime = cl.mtime[0];
+            ent.Msgtime = cl.mtime[0];
             int modnum;
             if ((bits & Protocol.U_MODEL) != 0)
             {
@@ -380,20 +380,20 @@ namespace Quarp
                     Host.Error("CL_ParseModel: bad modnum");
             }
             else
-                modnum = ent.baseline.modelindex;
+                modnum = ent.Baseline.modelindex;
 
             model_t model = cl.model_precache[modnum];
-            if (model != ent.model)
+            if (model != ent.Model)
             {
-                ent.model = model;
+                ent.Model = model;
                 // automatic animation (torches, etc) can be either all together
                 // or randomized
                 if (model != null)
                 {
                     if (model.synctype == synctype_t.ST_RAND)
-                        ent.syncbase = (float)(Sys.Random() & 0x7fff) / 0x7fff;
+                        ent.Syncbase = (float)(Sys.Random() & 0x7fff) / 0x7fff;
                     else
-                        ent.syncbase = 0;
+                        ent.Syncbase = 0;
 
                     if (model.numframes < ent.Pose1)
                     {
@@ -412,81 +412,81 @@ namespace Quarp
             }
 
             if ((bits & Protocol.U_FRAME) != 0)
-                ent.frame = Net.Reader.ReadByte();
+                ent.Frame = Net.Reader.ReadByte();
             else
-                ent.frame = ent.baseline.frame;
+                ent.Frame = ent.Baseline.frame;
 
             if ((bits & Protocol.U_COLORMAP) != 0)
                 i = Net.Reader.ReadByte();
             else
-                i = ent.baseline.colormap;
+                i = ent.Baseline.colormap;
             if (i == 0)
-                ent.colormap = Scr.vid.colormap;
+                ent.Colormap = Scr.vid.colormap;
             else
             {
                 if (i > cl.maxclients)
                     Sys.Error("i >= cl.maxclients");
-                ent.colormap = cl.scores[i - 1].translations;
+                ent.Colormap = cl.scores[i - 1].translations;
             }
 
             int skin;
             if ((bits & Protocol.U_SKIN) != 0)
                 skin = Net.Reader.ReadByte();
             else
-                skin = ent.baseline.skin;
-            if (skin != ent.skinnum)
+                skin = ent.Baseline.skin;
+            if (skin != ent.Skinnum)
             {
-                ent.skinnum = skin;
+                ent.Skinnum = skin;
                 if (num > 0 && num <= cl.maxclients)
                     Render.TranslatePlayerSkin(num - 1);
             }
 
             if ((bits & Protocol.U_EFFECTS) != 0)
-                ent.effects = Net.Reader.ReadByte();
+                ent.Effects = Net.Reader.ReadByte();
             else
-                ent.effects = ent.baseline.effects;
+                ent.Effects = ent.Baseline.effects;
 
             // shift the known values for interpolation
-            ent.msg_origins[1] = ent.msg_origins[0];
-            ent.msg_angles[1] = ent.msg_angles[0];
+            ent.MsgOrigins[1] = ent.MsgOrigins[0];
+            ent.MsgAngles[1] = ent.MsgAngles[0];
 
             if ((bits & Protocol.U_ORIGIN1) != 0)
-                ent.msg_origins[0].X = Net.Reader.ReadCoord();
+                ent.MsgOrigins[0].X = Net.Reader.ReadCoord();
             else
-                ent.msg_origins[0].X = ent.baseline.origin.x;
+                ent.MsgOrigins[0].X = ent.Baseline.origin.x;
             if ((bits & Protocol.U_ANGLE1) != 0)
-                ent.msg_angles[0].X = Net.Reader.ReadAngle();
+                ent.MsgAngles[0].X = Net.Reader.ReadAngle();
             else
-                ent.msg_angles[0].X = ent.baseline.angles.x;
+                ent.MsgAngles[0].X = ent.Baseline.angles.x;
 
             if ((bits & Protocol.U_ORIGIN2) != 0)
-                ent.msg_origins[0].Y = Net.Reader.ReadCoord();
+                ent.MsgOrigins[0].Y = Net.Reader.ReadCoord();
             else
-                ent.msg_origins[0].Y = ent.baseline.origin.y;
+                ent.MsgOrigins[0].Y = ent.Baseline.origin.y;
             if ((bits & Protocol.U_ANGLE2) != 0)
-                ent.msg_angles[0].Y = Net.Reader.ReadAngle();
+                ent.MsgAngles[0].Y = Net.Reader.ReadAngle();
             else
-                ent.msg_angles[0].Y = ent.baseline.angles.y;
+                ent.MsgAngles[0].Y = ent.Baseline.angles.y;
 
             if ((bits & Protocol.U_ORIGIN3) != 0)
-                ent.msg_origins[0].Z = Net.Reader.ReadCoord();
+                ent.MsgOrigins[0].Z = Net.Reader.ReadCoord();
             else
-                ent.msg_origins[0].Z = ent.baseline.origin.z;
+                ent.MsgOrigins[0].Z = ent.Baseline.origin.z;
             if ((bits & Protocol.U_ANGLE3) != 0)
-                ent.msg_angles[0].Z = Net.Reader.ReadAngle();
+                ent.MsgAngles[0].Z = Net.Reader.ReadAngle();
             else
-                ent.msg_angles[0].Z = ent.baseline.angles.z;
+                ent.MsgAngles[0].Z = ent.Baseline.angles.z;
 
             if ((bits & Protocol.U_NOLERP) != 0)
-                ent.forcelink = true;
+                ent.Forcelink = true;
 
             if (forcelink)
             {	// didn't have an update last message
-                ent.msg_origins[1] = ent.msg_origins[0];
-                ent.origin = ent.msg_origins[0];
-                ent.msg_angles[1] = ent.msg_angles[0];
-                ent.angles = ent.msg_angles[0];
-                ent.forcelink = true;
+                ent.MsgOrigins[1] = ent.MsgOrigins[0];
+                ent.Origin = ent.MsgOrigins[0];
+                ent.MsgAngles[1] = ent.MsgAngles[0];
+                ent.Angles = ent.MsgAngles[0];
+                ent.Forcelink = true;
             }
         }
 
@@ -713,7 +713,7 @@ namespace Quarp
             Sound.EndPrecaching();
 
             // local state
-            _Entities[0].model = cl.worldmodel = cl.model_precache[1];
+            _Entities[0].Model = cl.worldmodel = cl.model_precache[1];
 
             Render.NewMap();
 
@@ -771,16 +771,16 @@ namespace Quarp
             for (int i = 0, offset = 0; i < Vid.VID_GRADES; i++)//, dest += 256, source+=256)
             {
                 if (top < 128)	// the artists made some backwards ranges.  sigh.
-                    Buffer.BlockCopy(source, offset + top, dest, offset + Render.TOP_RANGE, 16);  //memcpy (dest + Render.TOP_RANGE, source + top, 16);
+                    Buffer.BlockCopy(source, offset + top, dest, offset + Render.TopRange, 16);  //memcpy (dest + Render.TOP_RANGE, source + top, 16);
                 else
                     for (int j = 0; j < 16; j++)
-                        dest[offset + Render.TOP_RANGE + j] = source[offset + top + 15 - j];
+                        dest[offset + Render.TopRange + j] = source[offset + top + 15 - j];
 
                 if (bottom < 128)
-                    Buffer.BlockCopy(source, offset + bottom, dest, offset + Render.BOTTOM_RANGE, 16); // memcpy(dest + Render.BOTTOM_RANGE, source + bottom, 16);
+                    Buffer.BlockCopy(source, offset + bottom, dest, offset + Render.BottomRange, 16); // memcpy(dest + Render.BOTTOM_RANGE, source + bottom, 16);
                 else
                     for (int j = 0; j < 16; j++)
-                        dest[offset + Render.BOTTOM_RANGE + j] = source[offset + bottom + 15 - j];
+                        dest[offset + Render.BottomRange + j] = source[offset + bottom + 15 - j];
 
                 offset += 256;
             }
@@ -794,7 +794,7 @@ namespace Quarp
         /// </summary>
         /// <param name="num"></param>
         /// <returns></returns>
-        static entity_t EntityNum(int num)
+        static EntityT EntityNum(int num)
         {
             if (num >= cl.num_entities)
             {
@@ -802,7 +802,7 @@ namespace Quarp
                     Host.Error("CL_EntityNum: %i is an invalid number", num);
                 while (cl.num_entities <= num)
                 {
-                    _Entities[cl.num_entities].colormap = Scr.vid.colormap;
+                    _Entities[cl.num_entities].Colormap = Scr.vid.colormap;
                     cl.num_entities++;
                 }
             }
@@ -815,18 +815,18 @@ namespace Quarp
         /// CL_ParseBaseline
         /// </summary>
         /// <param name="ent"></param>
-        static void ParseBaseline(entity_t ent)
+        static void ParseBaseline(EntityT ent)
         {
-            ent.baseline.modelindex = Net.Reader.ReadByte();
-            ent.baseline.frame = Net.Reader.ReadByte();
-            ent.baseline.colormap = Net.Reader.ReadByte();
-            ent.baseline.skin = Net.Reader.ReadByte();
-            ent.baseline.origin.x = Net.Reader.ReadCoord();
-            ent.baseline.angles.x = Net.Reader.ReadAngle();
-            ent.baseline.origin.y = Net.Reader.ReadCoord();
-            ent.baseline.angles.y = Net.Reader.ReadAngle();
-            ent.baseline.origin.z = Net.Reader.ReadCoord();
-            ent.baseline.angles.z = Net.Reader.ReadAngle();
+            ent.Baseline.modelindex = Net.Reader.ReadByte();
+            ent.Baseline.frame = Net.Reader.ReadByte();
+            ent.Baseline.colormap = Net.Reader.ReadByte();
+            ent.Baseline.skin = Net.Reader.ReadByte();
+            ent.Baseline.origin.x = Net.Reader.ReadCoord();
+            ent.Baseline.angles.x = Net.Reader.ReadAngle();
+            ent.Baseline.origin.y = Net.Reader.ReadCoord();
+            ent.Baseline.angles.y = Net.Reader.ReadAngle();
+            ent.Baseline.origin.z = Net.Reader.ReadCoord();
+            ent.Baseline.angles.z = Net.Reader.ReadAngle();
         }
 
         /// <summary>
@@ -838,18 +838,18 @@ namespace Quarp
             if (i >= MAX_STATIC_ENTITIES)
                 Host.Error("Too many static entities");
 
-            entity_t ent = _StaticEntities[i];
+            EntityT ent = _StaticEntities[i];
             cl.num_statics++;
             ParseBaseline(ent);
 
             // copy it to the current state
-            ent.model = cl.model_precache[ent.baseline.modelindex];
-            ent.frame = ent.baseline.frame;
-            ent.colormap = Scr.vid.colormap;
-            ent.skinnum = ent.baseline.skin;
-            ent.effects = ent.baseline.effects;
-            ent.origin = Common.ToVector(ref ent.baseline.origin);
-            ent.angles = Common.ToVector(ref ent.baseline.angles);
+            ent.Model = cl.model_precache[ent.Baseline.modelindex];
+            ent.Frame = ent.Baseline.frame;
+            ent.Colormap = Scr.vid.colormap;
+            ent.Skinnum = ent.Baseline.skin;
+            ent.Effects = ent.Baseline.effects;
+            ent.Origin = Common.ToVector(ref ent.Baseline.origin);
+            ent.Angles = Common.ToVector(ref ent.Baseline.angles);
             Render.AddEfrags(ent);
         }
 

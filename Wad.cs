@@ -86,20 +86,23 @@ namespace Quarp
 
             _Lumps = new Dictionary<string, lumpinfo_t>(numlumps);
 
-            for (int i = 0; i < numlumps; i++)
+            for (var i = 0; i < numlumps; ++i)
             {
-                IntPtr ptr = new IntPtr(_DataPtr.ToInt64() + infotableofs + i * lumpInfoSize);
-                lumpinfo_t lump = (lumpinfo_t)Marshal.PtrToStructure(ptr, typeof(lumpinfo_t));
+                var ptr = new IntPtr(_DataPtr.ToInt64() + infotableofs + i * lumpInfoSize);
+                var lump = (lumpinfo_t)Marshal.PtrToStructure(ptr, typeof(lumpinfo_t));
+                var lname = Encoding.ASCII.GetString(lump.name).TrimEnd('\0').ToLower();
+
                 lump.filepos = Common.LittleLong(lump.filepos);
                 lump.size = Common.LittleLong(lump.size);
+
                 if (lump.type == TYP_QPIC)
                 {
                     ptr = new IntPtr(_DataPtr.ToInt64() + lump.filepos);
-                    dqpicheader_t pic = (dqpicheader_t)Marshal.PtrToStructure(ptr, typeof(dqpicheader_t));
+                    var pic = (dqpicheader_t)Marshal.PtrToStructure(ptr, typeof(dqpicheader_t));
                     SwapPic(pic);
                     Marshal.StructureToPtr(pic, ptr, true);
                 }
-                _Lumps.Add(Encoding.ASCII.GetString(lump.name).TrimEnd('\0').ToLower(), lump);
+                _Lumps.Add(lname, lump);
             }
         }
         
@@ -111,12 +114,8 @@ namespace Quarp
             {
                 return lump;
             }
-            else
-            {
-                Sys.Error("W_GetLumpinfo: {0} not found", name);
-            }
-            // We must never be there
-            throw new InvalidOperationException("W_GetLumpinfo: Unreachable code reached!");
+            Sys.Error("W_GetLumpinfo: {0} not found", name);
+            return null;
         }
 
         // void	*W_GetLumpName (char *name)

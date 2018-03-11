@@ -243,7 +243,7 @@ namespace Quarp.HudSystem
         {
             Con.Print("--\n");
             Con.Print($"GL  | [{Scr.glX} {Scr.glY}] [{Scr.glWidth} {Scr.glHeight}]\n");
-            Con.Print($"Ref | [{Render.RefDef.vrect.x} {Render.RefDef.vrect.y}] [{Render.RefDef.vrect.width} {Render.RefDef.vrect.height}]\n");
+            Con.Print($"Ref | [{Render.RefDef.Vrect.x} {Render.RefDef.Vrect.y}] [{Render.RefDef.Vrect.width} {Render.RefDef.Vrect.height}]\n");
             Con.Print($"Hud | [{Width} {Height}]\n");
             Con.Print($"Con | [{Scr.ConLines} {Scr.ConCurrent}]\n");
             Con.Print("--\n");

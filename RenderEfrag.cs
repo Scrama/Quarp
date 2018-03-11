@@ -31,7 +31,7 @@ namespace Quarp
 {
     partial class Render
     {
-        static entity_t _AddEnt; // r_addent
+        static EntityT _AddEnt; // r_addent
         static mnode_t _EfragTopNode; // r_pefragtopnode
         static Vector3 _EMins; // r_emins
         static Vector3 _EMaxs; // r_emaxs
@@ -45,21 +45,21 @@ namespace Quarp
         /// <summary>
         /// R_AddEfrags
         /// </summary>
-        public static void AddEfrags(entity_t ent)
+        public static void AddEfrags(EntityT ent)
         {
-            if (ent.model == null)
+            if (ent.Model == null)
                 return;
 
             _AddEnt = ent;
             _LastObj = ent; //  lastlink = &ent->efrag;
             _EfragTopNode = null;
 
-            model_t entmodel = ent.model;
-            _EMins = ent.origin + entmodel.mins;
-            _EMaxs = ent.origin + entmodel.maxs;
+            model_t entmodel = ent.Model;
+            _EMins = ent.Origin + entmodel.mins;
+            _EMaxs = ent.Origin + entmodel.maxs;
 
             SplitEntityOnNode(Client.cl.worldmodel.nodes[0]);
-            ent.topnode = _EfragTopNode;
+            ent.Topnode = _EfragTopNode;
         }
 
         /// <summary>
@@ -79,32 +79,32 @@ namespace Quarp
                 mleaf_t leaf = (mleaf_t)(object)node;
 
                 // grab an efrag off the free list
-                efrag_t ef = Client.cl.free_efrags;
+                EfragT ef = Client.cl.free_efrags;
                 if (ef == null)
                 {
                     Con.Print("Too many efrags!\n");
                     return;	// no free fragments...
                 }
-                Client.cl.free_efrags = Client.cl.free_efrags.entnext;
+                Client.cl.free_efrags = Client.cl.free_efrags.Entnext;
 
-                ef.entity = _AddEnt;
+                ef.Entity = _AddEnt;
 
                 // add the entity link
                 // *lastlink = ef;
-                if (_LastObj is entity_t)
+                if (_LastObj is EntityT)
                 {
-                    ((entity_t)_LastObj).efrag = ef;
+                    ((EntityT)_LastObj).Efrag = ef;
                 }
                 else
                 {
-                    ((efrag_t)_LastObj).entnext = ef;
+                    ((EfragT)_LastObj).Entnext = ef;
                 }
                 _LastObj = ef; // lastlink = &ef->entnext;
-                ef.entnext = null;
+                ef.Entnext = null;
 
                 // set the leaf links
-                ef.leaf = leaf;
-                ef.leafnext = leaf.efrags;
+                ef.Leaf = leaf;
+                ef.Leafnext = leaf.efrags;
                 leaf.efrags = ef;
 
                 return;
@@ -138,27 +138,27 @@ namespace Quarp
         /// R_StoreEfrags
         /// FIXME: a lot of this goes away with edge-based
         /// </summary>
-        static void StoreEfrags(efrag_t ef)
+        static void StoreEfrags(EfragT ef)
         {
             while (ef != null)
             {
-                entity_t pent = ef.entity;
-                model_t clmodel = pent.model;
+                EntityT pent = ef.Entity;
+                model_t clmodel = pent.Model;
 
                 switch (clmodel.type)
                 {
                     case modtype_t.mod_alias:
                     case modtype_t.mod_brush:
                     case modtype_t.mod_sprite:
-                        if ((pent.visframe != _FrameCount) && (Client.NumVisEdicts < Client.MAX_VISEDICTS))
+                        if ((pent.Visframe != _frameCount) && (Client.NumVisEdicts < Client.MAX_VISEDICTS))
                         {
                             Client.VisEdicts[Client.NumVisEdicts++] = pent;
 
                             // mark that we've recorded this entity for this frame
-                            pent.visframe = _FrameCount;
+                            pent.Visframe = _frameCount;
                         }
 
-                        ef = ef.leafnext;
+                        ef = ef.Leafnext;
                         break;
 
                     default:

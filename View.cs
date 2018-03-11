@@ -208,13 +208,13 @@ namespace Quarp
                 // render two interleaved views
                 //
                 viddef_t vid = Scr.vid;
-                refdef_t rdef = Render.RefDef;
+                RefdefT rdef = Render.RefDef;
 
                 vid.rowbytes <<= 1;
                 vid.aspect *= 0.5f;
 
-                rdef.viewangles.Y -= _LcdYaw.Value;
-                rdef.vieworg -= _Right * _LcdX.Value;
+                rdef.Viewangles.Y -= _LcdYaw.Value;
+                rdef.Vieworg -= _Right * _LcdX.Value;
 
                 Render.RenderView();
 
@@ -222,14 +222,14 @@ namespace Quarp
 
                 Render.PushDlights();
 
-                rdef.viewangles.Y += _LcdYaw.Value * 2;
-                rdef.vieworg += _Right * _LcdX.Value * 2;
+                rdef.Viewangles.Y += _LcdYaw.Value * 2;
+                rdef.Vieworg += _Right * _LcdX.Value * 2;
 
                 Render.RenderView();
 
                 // ????????? vid.buffer -= vid.rowbytes>>1;
 
-                rdef.vrect.height <<= 1;
+                rdef.Vrect.height <<= 1;
 
                 vid.rowbytes >>= 1;
                 vid.aspect *= 2;
@@ -417,15 +417,15 @@ namespace Quarp
         static void CalcIntermissionRefDef()
         {
             // ent is the player model (visible when out of body)
-	        entity_t ent = Client.ViewEntity;
+	        EntityT ent = Client.ViewEntity;
 
             // view is the weapon model (only visible from inside body)
-	        entity_t view = Client.ViewEnt;
+	        EntityT view = Client.ViewEnt;
             
-            refdef_t rdef = Render.RefDef;
-	        rdef.vieworg = ent.origin;
-            rdef.viewangles = ent.angles;
-	        view.model = null;
+            RefdefT rdef = Render.RefDef;
+	        rdef.Vieworg = ent.Origin;
+            rdef.Viewangles = ent.Angles;
+	        view.Model = null;
 
             // allways idle in intermission
             AddIdle(1);
@@ -438,78 +438,78 @@ namespace Quarp
             DriftPitch();
 
             // ent is the player model (visible when out of body)
-            entity_t ent = Client.ViewEntity;
+            EntityT ent = Client.ViewEntity;
             // view is the weapon model (only visible from inside body)
-            entity_t view = Client.ViewEnt;
+            EntityT view = Client.ViewEnt;
 
             // transform the view offset by the model's matrix to get the offset from
             // model origin for the view
-            ent.angles.Y = Client.cl.viewangles.Y;	// the model should face the view dir
-            ent.angles.X = -Client.cl.viewangles.X;	// the model should face the view dir
+            ent.Angles.Y = Client.cl.viewangles.Y;	// the model should face the view dir
+            ent.Angles.X = -Client.cl.viewangles.X;	// the model should face the view dir
 
             float bob = CalcBob();
 
-            refdef_t rdef = Render.RefDef;
+            RefdefT rdef = Render.RefDef;
             client_state_t cl = Client.cl;
 
             // refresh position
-            rdef.vieworg = ent.origin;
-            rdef.vieworg.Z += cl.viewheight + bob;
+            rdef.Vieworg = ent.Origin;
+            rdef.Vieworg.Z += cl.viewheight + bob;
 
             // never let it sit exactly on a node line, because a water plane can
             // dissapear when viewed with the eye exactly on it.
             // the server protocol only specifies to 1/16 pixel, so add 1/32 in each axis
-            rdef.vieworg += SmallOffset;
-            rdef.viewangles = cl.viewangles;
+            rdef.Vieworg += SmallOffset;
+            rdef.Viewangles = cl.viewangles;
 
             CalcViewRoll();
             AddIdle(_IdleScale.Value);
 
             // offsets
-            Vector3 angles = ent.angles;
+            Vector3 angles = ent.Angles;
             angles.X = -angles.X; // because entity pitches are actually backward
 
             Vector3 forward, right, up;
             Mathlib.AngleVectors(ref angles, out forward, out right, out up);
 
-            rdef.vieworg += forward * _ScrOfsX.Value + right * _ScrOfsY.Value + up * _ScrOfsZ.Value;
+            rdef.Vieworg += forward * _ScrOfsX.Value + right * _ScrOfsY.Value + up * _ScrOfsZ.Value;
 
             BoundOffsets();
 
             // set up gun position
-            view.angles = cl.viewangles;
+            view.Angles = cl.viewangles;
 
             CalcGunAngle();
 
-            view.origin = ent.origin;
-            view.origin.Z += cl.viewheight;
-            view.origin += forward * bob * 0.4f;
-            view.origin.Z += bob;
+            view.Origin = ent.Origin;
+            view.Origin.Z += cl.viewheight;
+            view.Origin += forward * bob * 0.4f;
+            view.Origin.Z += bob;
 
-            view.model = cl.model_precache[cl.stats[QStats.STAT_WEAPON]];
-            view.frame = cl.stats[QStats.STAT_WEAPONFRAME];
-            view.colormap = Scr.vid.colormap;
+            view.Model = cl.model_precache[cl.stats[QStats.STAT_WEAPON]];
+            view.Frame = cl.stats[QStats.STAT_WEAPONFRAME];
+            view.Colormap = Scr.vid.colormap;
 
             // set up the refresh position
-            rdef.viewangles += cl.punchangle;
+            rdef.Viewangles += cl.punchangle;
 
             // smooth out stair step ups
-            if (cl.onground && ent.origin.Z - _OldZ > 0)
+            if (cl.onground && ent.Origin.Z - _OldZ > 0)
             {
                 float steptime = (float)(cl.time - cl.oldtime);
                 if (steptime < 0)
                     steptime = 0;
 
                 _OldZ += steptime * 80;
-                if (_OldZ > ent.origin.Z)
-                    _OldZ = ent.origin.Z;
-                if (ent.origin.Z - _OldZ > 12)
-                    _OldZ = ent.origin.Z - 12;
-                rdef.vieworg.Z += _OldZ - ent.origin.Z;
-                view.origin.Z += _OldZ - ent.origin.Z;
+                if (_OldZ > ent.Origin.Z)
+                    _OldZ = ent.Origin.Z;
+                if (ent.Origin.Z - _OldZ > 12)
+                    _OldZ = ent.Origin.Z - 12;
+                rdef.Vieworg.Z += _OldZ - ent.Origin.Z;
+                view.Origin.Z += _OldZ - ent.Origin.Z;
             }
             else
-                _OldZ = ent.origin.Z;
+                _OldZ = ent.Origin.Z;
 
             if (Chase.IsActive)
                 Chase.Update();
@@ -526,7 +526,7 @@ namespace Quarp
                 (float)(Math.Sin(time * _IPitchCycle.Value) * _IPitchLevel.Value),
                 (float)(Math.Sin(time * _IYawCycle.Value) * _IYawLevel.Value),
                 (float)(Math.Sin(time * _IRollCycle.Value) * _IRollLevel.Value));
-            Render.RefDef.viewangles += v * idleScale;
+            Render.RefDef.Viewangles += v * idleScale;
         }
 
         
@@ -626,20 +626,20 @@ namespace Quarp
         static void CalcViewRoll()
         {
             client_state_t cl = Client.cl;
-            refdef_t rdef = Render.RefDef;
-            float side = CalcRoll(ref Client.ViewEntity.angles, ref cl.velocity);
-            rdef.viewangles.Z += side;
+            RefdefT rdef = Render.RefDef;
+            float side = CalcRoll(ref Client.ViewEntity.Angles, ref cl.velocity);
+            rdef.Viewangles.Z += side;
 
             if (_DmgTime > 0)
             {
-                rdef.viewangles.Z += _DmgTime / _KickTime.Value * _DmgRoll;
-                rdef.viewangles.X += _DmgTime / _KickTime.Value * _DmgPitch;
+                rdef.Viewangles.Z += _DmgTime / _KickTime.Value * _DmgRoll;
+                rdef.Viewangles.X += _DmgTime / _KickTime.Value * _DmgPitch;
                 _DmgTime -= (float)Host.FrameTime;
             }
 
             if (cl.stats[QStats.STAT_HEALTH] <= 0)
             {
-                rdef.viewangles.Z = 80;	// dead view angle
+                rdef.Viewangles.Z = 80;	// dead view angle
                 return;
             }
         }
@@ -648,25 +648,25 @@ namespace Quarp
         // V_BoundOffsets
         static void BoundOffsets()
         {
-            entity_t ent = Client.ViewEntity;
+            EntityT ent = Client.ViewEntity;
 
             // absolutely bound refresh reletive to entity clipping hull
             // so the view can never be inside a solid wall
-            refdef_t rdef = Render.RefDef;
-            if (rdef.vieworg.X < ent.origin.X - 14)
-                rdef.vieworg.X = ent.origin.X - 14;
-            else if (rdef.vieworg.X > ent.origin.X + 14)
-                rdef.vieworg.X = ent.origin.X + 14;
+            RefdefT rdef = Render.RefDef;
+            if (rdef.Vieworg.X < ent.Origin.X - 14)
+                rdef.Vieworg.X = ent.Origin.X - 14;
+            else if (rdef.Vieworg.X > ent.Origin.X + 14)
+                rdef.Vieworg.X = ent.Origin.X + 14;
 
-            if (rdef.vieworg.Y < ent.origin.Y - 14)
-                rdef.vieworg.Y = ent.origin.Y - 14;
-            else if (rdef.vieworg.Y > ent.origin.Y + 14)
-                rdef.vieworg.Y = ent.origin.Y + 14;
+            if (rdef.Vieworg.Y < ent.Origin.Y - 14)
+                rdef.Vieworg.Y = ent.Origin.Y - 14;
+            else if (rdef.Vieworg.Y > ent.Origin.Y + 14)
+                rdef.Vieworg.Y = ent.Origin.Y + 14;
 
-            if (rdef.vieworg.Z < ent.origin.Z - 22)
-                rdef.vieworg.Z = ent.origin.Z - 22;
-            else if (rdef.vieworg.Z > ent.origin.Z + 30)
-                rdef.vieworg.Z = ent.origin.Z + 30;
+            if (rdef.Vieworg.Z < ent.Origin.Z - 22)
+                rdef.Vieworg.Z = ent.Origin.Z - 22;
+            else if (rdef.Vieworg.Z > ent.Origin.Z + 30)
+                rdef.Vieworg.Z = ent.Origin.Z + 30;
         }
 
 
@@ -675,16 +675,16 @@ namespace Quarp
         /// </summary>
         static void CalcGunAngle()
         {
-            refdef_t rdef = Render.RefDef;
-            float yaw = rdef.viewangles.Y;
-            float pitch = -rdef.viewangles.X;
+            RefdefT rdef = Render.RefDef;
+            float yaw = rdef.Viewangles.Y;
+            float pitch = -rdef.Viewangles.X;
 
-            yaw = AngleDelta(yaw - rdef.viewangles.Y) * 0.4f;
+            yaw = AngleDelta(yaw - rdef.Viewangles.Y) * 0.4f;
             if (yaw > 10)
                 yaw = 10;
             if (yaw < -10)
                 yaw = -10;
-            pitch = AngleDelta(-pitch - rdef.viewangles.X) * 0.4f;
+            pitch = AngleDelta(-pitch - rdef.Viewangles.X) * 0.4f;
             if (pitch > 10)
                 pitch = 10;
             if (pitch < -10)
@@ -716,13 +716,13 @@ namespace Quarp
             _OldPitch = pitch;
 
             client_state_t cl = Client.cl;
-            cl.viewent.angles.Y = rdef.viewangles.Y +yaw;
-            cl.viewent.angles.X = -(rdef.viewangles.X + pitch);
+            cl.viewent.Angles.Y = rdef.Viewangles.Y +yaw;
+            cl.viewent.Angles.X = -(rdef.Viewangles.X + pitch);
 
             float idleScale = _IdleScale.Value;
-            cl.viewent.angles.Z -= (float)(idleScale * Math.Sin(cl.time * _IRollCycle.Value) * _IRollLevel.Value);
-            cl.viewent.angles.X -= (float)(idleScale * Math.Sin(cl.time * _IPitchCycle.Value) * _IPitchLevel.Value);
-            cl.viewent.angles.Y -= (float)(idleScale * Math.Sin(cl.time * _IYawCycle.Value) * _IYawLevel.Value);
+            cl.viewent.Angles.Z -= (float)(idleScale * Math.Sin(cl.time * _IRollCycle.Value) * _IRollLevel.Value);
+            cl.viewent.Angles.X -= (float)(idleScale * Math.Sin(cl.time * _IPitchCycle.Value) * _IPitchLevel.Value);
+            cl.viewent.Angles.Y -= (float)(idleScale * Math.Sin(cl.time * _IYawCycle.Value) * _IYawLevel.Value);
         }
 
         // angledelta()
@@ -874,13 +874,13 @@ namespace Quarp
             //
             // calculate view angle kicks
             //
-            entity_t ent = Client.Entities[cl.viewentity];
+            EntityT ent = Client.Entities[cl.viewentity];
 
-            from -= ent.origin; //  VectorSubtract (from, ent->origin, from);
+            from -= ent.Origin; //  VectorSubtract (from, ent->origin, from);
             Mathlib.Normalize(ref from);
 
             Vector3 forward, right, up;
-            Mathlib.AngleVectors(ref ent.angles, out forward, out right, out up);
+            Mathlib.AngleVectors(ref ent.Angles, out forward, out right, out up);
 
             float side = Vector3.Dot(from, right);
 

@@ -117,11 +117,11 @@ namespace Quarp
 
         static void Test5_f()
         {
-            entity_t p = Client.ViewEntity;
+            EntityT p = Client.ViewEntity;
             if (p == null)
                 return;
             
-            OpenTK.Vector3 org = p.origin;
+            OpenTK.Vector3 org = p.Origin;
 
             for (int i = 0; i < Server.sv.edicts.Length; i++)
             {
@@ -209,7 +209,7 @@ namespace Quarp
             // Fielddefs
             _FieldDefs = new ddef_t[_Progs.numfielddefs];
             offset = _Progs.ofs_fielddefs;
-            for (int i = 0; i < _FieldDefs.Length; i++, offset += ddef_t.SizeInBytes)
+            for (int i = 0; i < _FieldDefs.Length; ++i, offset += ddef_t.SizeInBytes)
             {
                 _FieldDefs[i] = Sys.BytesToStructure<ddef_t>(buf, offset);
                 _FieldDefs[i].SwapBytes();
@@ -220,7 +220,7 @@ namespace Quarp
             // Statements
             _Statements = new dstatement_t[_Progs.numstatements];
             offset = _Progs.ofs_statements;
-            for (int i = 0; i < _Statements.Length; i++, offset += dstatement_t.SizeInBytes)
+            for (int i = 0; i < _Statements.Length; ++i, offset += dstatement_t.SizeInBytes)
             {
                 _Statements[i] = Sys.BytesToStructure<dstatement_t>(buf, offset);
                 _Statements[i].SwapBytes();
@@ -462,7 +462,7 @@ namespace Quarp
                 data = Common.Parse(data);
                 if (Common.Token.StartsWith("}"))
                     break;
-
+ 
                 if (data == null)
                     Sys.Error("ED_ParseEntity: EOF without closing brace");
 
@@ -499,6 +499,9 @@ namespace Quarp
                 if (keyname[0] == '_')
                     continue;
 
+                if (WorldspawnCvars(ent, keyname, Common.Token))
+                    continue;
+
                 ddef_t key = FindField(keyname);
                 if (key == null)
                 {
@@ -520,6 +523,26 @@ namespace Quarp
                 ent.free = true;
 
             return data;
+        }
+
+        private static readonly Lazy<Dictionary<string, Cvar>> CvarMap
+            = new Lazy<Dictionary<string, Cvar>>(() =>
+                new Dictionary<string, Cvar>
+                {
+                    {"sky", Render.Sky},
+                    {"sky_clouds", Render.SkyClouds},
+                    {"sky_rotation", Render.SkyRotation}
+                });
+
+        static bool WorldspawnCvars(edict_t ent, string key, string value)
+        {
+            if (GetString(ent.v.classname) != "worldspawn")
+                return false;
+            if (!CvarMap.Value.TryGetValue(key, out var cvar))
+                return false;
+
+            cvar.Set(value);
+            return true;
         }
 
         /// <summary>
@@ -603,7 +626,7 @@ namespace Quarp
 
         static int IndexOfField(string name)
         {
-            for (int i = 0; i < _FieldDefs.Length; i++)
+            for (int i = 0; i < _FieldDefs.Length; ++i)
             {
                 if (SameName(_FieldDefs[i].s_name, name))
                     return i;
@@ -891,6 +914,15 @@ namespace Quarp
             return ed.GetFloat(def.ofs);
         }
 
+        public static string GetEdictFieldString(edict_t ed, string field, string defaultValue = "")
+        {
+            ddef_t def = CachedSearch(ed, field);
+            if (def == null)
+                return defaultValue;
+
+            return defaultValue;
+        }
+
         public static bool SetEdictFieldFloat(edict_t ed, string field, float value)
         {
             ddef_t def = CachedSearch(ed, field);
@@ -1015,7 +1047,7 @@ namespace Quarp
         /// <summary>
         /// ED_Write
         /// </summary>
-        public unsafe static void WriteEdict(StreamWriter writer, edict_t ed)
+        public static unsafe void WriteEdict(StreamWriter writer, edict_t ed)
         {
             writer.WriteLine("{");
 
@@ -1025,7 +1057,7 @@ namespace Quarp
                 return;
             }
 
-            for (int i = 1; i < _Progs.numfielddefs; i++)
+            for (int i = 1; i < _Progs.numfielddefs; ++i)
             {
                 ddef_t d = _FieldDefs[i];
                 string name = GetString(d.s_name);
@@ -1055,6 +1087,13 @@ namespace Quarp
 
                         writer.WriteLine("\"{0}\" \"{1}\"", name, UglyValueString((etype_t)d.type, (eval_t*)v));
                     }
+                }
+            }
+            if (GetString(ed.v.classname) == "worldspawn")
+            {
+                foreach (var cvar in CvarMap.Value)
+                {
+                    writer.WriteLine($"\"{cvar.Key}\" \"{cvar.Value.String}\"");
                 }
             }
 

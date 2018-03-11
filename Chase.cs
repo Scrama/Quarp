@@ -75,27 +75,27 @@ namespace Quarp
             Mathlib.AngleVectors(ref Client.cl.viewangles, out forward, out right, out up);
 
             // calc exact destination
-            _Dest = Render.RefDef.vieworg - forward * _Back.Value - right * _Right.Value;
-            _Dest.Z = Render.RefDef.vieworg.Z + _Up.Value;
+            _Dest = Render.RefDef.Vieworg - forward * _Back.Value - right * _Right.Value;
+            _Dest.Z = Render.RefDef.Vieworg.Z + _Up.Value;
 
             // find the spot the player is looking at
-            Vector3 dest = Render.RefDef.vieworg + forward * 4096;
+            Vector3 dest = Render.RefDef.Vieworg + forward * 4096;
 
             Vector3 stop;
-            TraceLine(ref Render.RefDef.vieworg, ref dest, out stop);
+            TraceLine(ref Render.RefDef.Vieworg, ref dest, out stop);
 
             // calculate pitch to look at the same spot from camera
-            stop -= Render.RefDef.vieworg;
+            stop -= Render.RefDef.Vieworg;
             float dist;
             Vector3.Dot(ref stop, ref forward, out dist);
             if (dist < 1)
                 dist = 1;
 
-            Render.RefDef.viewangles.X = (float)(-Math.Atan(stop.Z / dist) / Math.PI * 180.0);
+            Render.RefDef.Viewangles.X = (float)(-Math.Atan(stop.Z / dist) / Math.PI * 180.0);
             //r_refdef.viewangles[PITCH] = -atan(stop[2] / dist) / M_PI * 180;
 
             // move towards destination
-            Render.RefDef.vieworg = _Dest; //VectorCopy(chase_dest, r_refdef.vieworg);
+            Render.RefDef.Vieworg = _Dest; //VectorCopy(chase_dest, r_refdef.vieworg);
         }
 
         static void TraceLine(ref Vector3 start, ref Vector3 end, out Vector3 impact)

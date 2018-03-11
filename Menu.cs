@@ -363,16 +363,16 @@ namespace Quarp
             _IdentityTable.CopyTo(_TranslationTable, 0);
 
             if (top < 128)	// the artists made some backwards ranges.  sigh.
-                Array.Copy(_IdentityTable, top, _TranslationTable, Render.TOP_RANGE, 16); // memcpy (dest + Render.TOP_RANGE, source + top, 16);
+                Array.Copy(_IdentityTable, top, _TranslationTable, Render.TopRange, 16); // memcpy (dest + Render.TOP_RANGE, source + top, 16);
             else
                 for (int j = 0; j < 16; j++)
-                    _TranslationTable[Render.TOP_RANGE + j] = _IdentityTable[top + 15 - j];
+                    _TranslationTable[Render.TopRange + j] = _IdentityTable[top + 15 - j];
 
             if (bottom < 128)
-                Array.Copy(_IdentityTable, bottom, _TranslationTable, Render.BOTTOM_RANGE, 16); // memcpy(dest + Render.BOTTOM_RANGE, source + bottom, 16);
+                Array.Copy(_IdentityTable, bottom, _TranslationTable, Render.BottomRange, 16); // memcpy(dest + Render.BOTTOM_RANGE, source + bottom, 16);
             else
                 for (int j = 0; j < 16; j++)
-                    _TranslationTable[Render.BOTTOM_RANGE + j] = _IdentityTable[bottom + 15 - j];
+                    _TranslationTable[Render.BottomRange + j] = _IdentityTable[bottom + 15 - j];
         }
 
     }

@@ -148,6 +148,7 @@
     <Compile Include="RenderPart.cs" />
     <Compile Include="RenderSurf.cs" />
     <Compile Include="RenderWarp.cs" />
+    <Compile Include="RenderUtils\Skybox.cs" />
     <Compile Include="Sbar.cs" />
     <Compile Include="Screen.cs" />
     <Compile Include="Screen2d.cs" />

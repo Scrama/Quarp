@@ -39,18 +39,18 @@ namespace Quarp
         static int _LightMapBytes; // lightmap_bytes		// 1, 2, or 4
         static mvertex_t[] _CurrentVertBase; // r_pcurrentvertbase
         static model_t _CurrentModel; // currentmodel
-        static bool[] _LightMapModified = new bool[MAX_LIGHTMAPS]; // lightmap_modified
-        static glpoly_t[] _LightMapPolys = new glpoly_t[MAX_LIGHTMAPS]; // lightmap_polys
-        static glRect_t[] _LightMapRectChange = new glRect_t[MAX_LIGHTMAPS]; // lightmap_rectchange
+        static bool[] _LightMapModified = new bool[MaxLightmaps]; // lightmap_modified
+        static glpoly_t[] _LightMapPolys = new glpoly_t[MaxLightmaps]; // lightmap_polys
+        static glRect_t[] _LightMapRectChange = new glRect_t[MaxLightmaps]; // lightmap_rectchange
         static uint[] _BlockLights = new uint[18*18]; // blocklights
         static int _ColinElim; // nColinElim
         static msurface_t _SkyChain; // skychain
         static msurface_t _WaterChain; // waterchain
-        static entity_t _TempEnt = new entity_t(); // for DrawWorld
+        static EntityT _TempEnt = new EntityT(); // for DrawWorld
 
         // the lightmap texture data needs to be kept in
         // main memory so texsubimage can update properly
-        static byte[] _LightMaps = new byte[4 * MAX_LIGHTMAPS * BLOCK_WIDTH * BLOCK_HEIGHT]; // lightmaps
+        static byte[] _LightMaps = new byte[4 * MaxLightmaps * BlockWidth * BlockHeight]; // lightmaps
 
         /// <summary>
         /// GL_BuildLightmaps
@@ -58,13 +58,13 @@ namespace Quarp
         /// </summary>
         static void BuildLightMaps()
         {
-            Array.Clear(_Allocated, 0, _Allocated.Length);
+            Array.Clear(_allocated, 0, _allocated.Length);
             //memset (allocated, 0, sizeof(allocated));
 
-            _FrameCount = 1;		// no dlightcache
+            _frameCount = 1;		// no dlightcache
 
             if (_LightMapTextures == 0)
-                _LightMapTextures = Drawer.GenerateTextureNumberRange(MAX_LIGHTMAPS);
+                _LightMapTextures = Drawer.GenerateTextureNumberRange(MaxLightmaps);
 
             Drawer.LightMapFormat = PixelFormat.Luminance;// GL_LUMINANCE;
 
@@ -140,22 +140,22 @@ namespace Quarp
                 IntPtr ptr = handle.AddrOfPinnedObject();
                 long lmAddr = ptr.ToInt64();
                 
-                for (int i = 0; i < MAX_LIGHTMAPS; i++)
+                for (int i = 0; i < MaxLightmaps; i++)
                 {
-                    if (_Allocated[i, 0] == 0)
+                    if (_allocated[i, 0] == 0)
                         break;		// no more used
 
                     _LightMapModified[i] = false;
-                    _LightMapRectChange[i].l = BLOCK_WIDTH;
-                    _LightMapRectChange[i].t = BLOCK_HEIGHT;
+                    _LightMapRectChange[i].l = BlockWidth;
+                    _LightMapRectChange[i].t = BlockHeight;
                     _LightMapRectChange[i].w = 0;
                     _LightMapRectChange[i].h = 0;
                     Drawer.Bind(_LightMapTextures + i);
                     Drawer.SetTextureFilters(TextureMinFilter.Linear, TextureMagFilter.Linear);
 
-                    long addr = lmAddr + i * BLOCK_WIDTH * BLOCK_HEIGHT * _LightMapBytes;
+                    long addr = lmAddr + i * BlockWidth * BlockHeight * _LightMapBytes;
                     GL.TexImage2D(TextureTarget.Texture2D, 0, (PixelInternalFormat)_LightMapBytes,
-                        BLOCK_WIDTH, BLOCK_HEIGHT, 0, Drawer.LightMapFormat, PixelType.UnsignedByte, new IntPtr(addr));
+                        BlockWidth, BlockHeight, 0, Drawer.LightMapFormat, PixelType.UnsignedByte, new IntPtr(addr));
                 }
             }
             finally
@@ -179,9 +179,9 @@ namespace Quarp
             int tmax = (surf.extents[1] >> 4) + 1;
 
             surf.lightmaptexturenum = AllocBlock(smax, tmax, ref surf.light_s, ref surf.light_t);
-            int offset = surf.lightmaptexturenum * _LightMapBytes * BLOCK_WIDTH * BLOCK_HEIGHT;
-            offset += (surf.light_t * BLOCK_WIDTH + surf.light_s) * _LightMapBytes;
-            BuildLightMap(surf, new ByteArraySegment(_LightMaps, offset), BLOCK_WIDTH * _LightMapBytes);
+            int offset = surf.lightmaptexturenum * _LightMapBytes * BlockWidth * BlockHeight;
+            offset += (surf.light_t * BlockWidth + surf.light_s) * _LightMapBytes;
+            BuildLightMap(surf, new ByteArraySegment(_LightMaps, offset), BlockWidth * _LightMapBytes);
         }
 
 
@@ -238,13 +238,13 @@ namespace Quarp
                 s -= fa.texturemins[0];
                 s += fa.light_s * 16;
                 s += 8;
-                s /= BLOCK_WIDTH * 16;
+                s /= BlockWidth * 16;
 
                 t = Mathlib.DotProduct(ref vec, ref fa.texinfo.vecs[1]) + fa.texinfo.vecs[1].W;
                 t -= fa.texturemins[1];
                 t += fa.light_t * 16;
                 t += 8;
-                t /= BLOCK_HEIGHT * 16;
+                t /= BlockHeight * 16;
 
                 poly.verts[i][5] = s;
                 poly.verts[i][6] = t;
@@ -293,20 +293,20 @@ namespace Quarp
         // returns a texture number and the position inside it
         static int AllocBlock(int w, int h, ref int x, ref int y)
         {
-            for (int texnum = 0; texnum < MAX_LIGHTMAPS; texnum++)
+            for (int texnum = 0; texnum < MaxLightmaps; texnum++)
             {
-                int best = BLOCK_HEIGHT;
+                int best = BlockHeight;
 
-                for (int i = 0; i < BLOCK_WIDTH - w; i++)
+                for (int i = 0; i < BlockWidth - w; i++)
                 {
                     int j, best2 = 0;
 
                     for (j = 0; j < w; j++)
                     {
-                        if (_Allocated[texnum, i + j] >= best)
+                        if (_allocated[texnum, i + j] >= best)
                             break;
-                        if (_Allocated[texnum, i + j] > best2)
-                            best2 = _Allocated[texnum, i + j];
+                        if (_allocated[texnum, i + j] > best2)
+                            best2 = _allocated[texnum, i + j];
                     }
                     if (j == w)
                     {
@@ -316,11 +316,11 @@ namespace Quarp
                     }
                 }
 
-                if (best + h > BLOCK_HEIGHT)
+                if (best + h > BlockHeight)
                     continue;
 
                 for (int i = 0; i < w; i++)
-                    _Allocated[texnum, x + i] = best + h;
+                    _allocated[texnum, x + i] = best + h;
 
                 return texnum;
             }
@@ -335,7 +335,7 @@ namespace Quarp
         /// </summary>
         static void BuildLightMap(msurface_t surf, ByteArraySegment dest, int stride)
         {
-            surf.cached_dlight = (surf.dlightframe == _FrameCount);
+            surf.cached_dlight = (surf.dlightframe == _frameCount);
 
             int smax = (surf.extents[0] >> 4) + 1;
             int tmax = (surf.extents[1] >> 4) + 1;
@@ -345,7 +345,7 @@ namespace Quarp
             byte[] lightmap = surf.sample_base;// surf.samples;
 
             // set to full bright if no light data
-            if (_FullBright.Value != 0 || Client.cl.worldmodel.lightdata == null)
+            if (_fullBright.Value != 0 || Client.cl.worldmodel.lightdata == null)
             {
                 for (int i = 0; i < size; i++)
                     _BlockLights[i] = 255 * 256;
@@ -360,7 +360,7 @@ namespace Quarp
                 if (lightmap != null)
                     for (int maps = 0; maps < BspFile.MAXLIGHTMAPS && surf.styles[maps] != 255; maps++)
                     {
-                        int scale = _LightStyleValue[surf.styles[maps]];
+                        int scale = _lightStyleValue[surf.styles[maps]];
                         surf.cached_light[maps] = scale;	// 8.8 fraction
                         for (int i = 0; i < size; i++)
                             _BlockLights[i] += (uint)(lightmap[srcOffset + i] * scale);
@@ -368,7 +368,7 @@ namespace Quarp
                     }
 
                 // add all the dynamic lights
-                if (surf.dlightframe == _FrameCount)
+                if (surf.dlightframe == _frameCount)
                     AddDynamicLights(surf);
             }
             // bound, invert, and shift
@@ -473,18 +473,18 @@ namespace Quarp
         /// </summary>
         static void DrawWaterSurfaces()
         {
-            if (_WaterAlpha.Value == 1.0f && _glTexSort.Value != 0)
+            if (_waterAlpha.Value == 1.0f && _glTexSort.Value != 0)
                 return;
 
             //
             // go back to the world matrix
             //
-            GL.LoadMatrix(ref _WorldMatrix);
+            GL.LoadMatrix(ref _worldMatrix);
 
-            if (_WaterAlpha.Value < 1.0)
+            if (_waterAlpha.Value < 1.0)
             {
                 GL.Enable(EnableCap.Blend);
-                GL.Color4(1, 1, 1, _WaterAlpha.Value);
+                GL.Color4(1, 1, 1, _waterAlpha.Value);
                 GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Modulate);
             }
 
@@ -526,7 +526,7 @@ namespace Quarp
                 }
             }
 
-            if (_WaterAlpha.Value < 1.0)
+            if (_waterAlpha.Value < 1.0)
             {
                 GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Replace);
                 GL.Color4(1f, 1, 1, 1);
@@ -539,24 +539,24 @@ namespace Quarp
         /// </summary>
         private static void MarkLeaves()
         {
-            if (_OldViewLeaf == _ViewLeaf && _NoVis.Value == 0)
+            if (_oldViewLeaf == _viewLeaf && _noVis.Value == 0)
                 return;
 
-            if (_IsMirror)
+            if (_isMirror)
                 return;
 
-            _VisFrameCount++;
-            _OldViewLeaf = _ViewLeaf;
+            _visFrameCount++;
+            _oldViewLeaf = _viewLeaf;
             
             byte[] vis;
-            if (_NoVis.Value != 0)
+            if (_noVis.Value != 0)
             {
                 vis = new byte[4096];
                 Common.FillArray<Byte>(vis, 0xff); // todo: add count parameter?
                 //memset(solid, 0xff, (cl.worldmodel->numleafs + 7) >> 3);
             }
             else
-                vis = Mod.LeafPVS(_ViewLeaf, Client.cl.worldmodel);
+                vis = Mod.LeafPVS(_viewLeaf, Client.cl.worldmodel);
 
             model_t world = Client.cl.worldmodel;
             for (int i = 0; i < world.numleafs; i++)
@@ -566,9 +566,9 @@ namespace Quarp
                     mnodebase_t node = world.leafs[i + 1];
                     do
                     {
-                        if (node.visframe == _VisFrameCount)
+                        if (node.visframe == _visFrameCount)
                             break;
-                        node.visframe = _VisFrameCount;
+                        node.visframe = _visFrameCount;
                         node = node.parent;
                     } while (node != null);
                 }
@@ -581,17 +581,17 @@ namespace Quarp
         private static void DrawWorld()
         {
             _TempEnt.Clear();
-            _TempEnt.model = Client.cl.worldmodel;
+            _TempEnt.Model = Client.cl.worldmodel;
 
-            _ModelOrg = _RefDef.vieworg;
-            _CurrentEntity = _TempEnt;
+            _modelOrg = _refDef.Vieworg;
+            _currentEntity = _TempEnt;
             Drawer.CurrentTexture = -1;
 
             GL.Color3(1f, 1, 1);
 
             Array.Clear(_LightMapPolys, 0, _LightMapPolys.Length);
 
-            RecursiveWorldNode(_TempEnt.model.nodes[0]);
+            RecursiveWorldNode(_TempEnt.Model.nodes[0]);
 
             DrawTextureChains();
 
@@ -604,7 +604,7 @@ namespace Quarp
         /// </summary>
         static void BlendLightmaps()
         {
-            if (_FullBright.Value != 0)
+            if (_fullBright.Value != 0)
                 return;
             if (_glTexSort.Value == 0)
                 return;
@@ -620,12 +620,12 @@ namespace Quarp
             //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             //}
 
-            if (_LightMap.Value == 0)
+            if (_lightMap.Value == 0)
             {
                 GL.Enable(EnableCap.Blend);
             }
 
-            for (int i = 0; i < MAX_LIGHTMAPS; i++)
+            for (int i = 0; i < MaxLightmaps; i++)
             {
                 glpoly_t p = _LightMapPolys[i];
                 if (p == null)
@@ -688,16 +688,16 @@ namespace Quarp
                 if (s == null)
                     continue;
 
-                if (i == _SkyTextureNum)
+                if (i == SkyTextureNum)
                     DrawSkyChain(s);
-                else if (i == _MirrorTextureNum && _MirrorAlpha.Value != 1.0f)
+                else if (i == _mirrorTextureNum && _mirrorAlpha.Value != 1.0f)
                 {
                     MirrorChain(s);
                     continue;
                 }
                 else
                 {
-                    if ((s.flags & Surf.SURF_DRAWTURB) != 0 && _WaterAlpha.Value != 1.0f)
+                    if ((s.flags & Surf.SURF_DRAWTURB) != 0 && _waterAlpha.Value != 1.0f)
                         continue;	// draw translucent water later
                     for (; s != null; s = s.texturechain)
                         RenderBrushPoly(s);
@@ -712,7 +712,7 @@ namespace Quarp
         /// </summary>
         private static void RenderBrushPoly(msurface_t fa)
         {
-            _BrushPolys++;
+            _brushPolys++;
 
             if ((fa.flags & Surf. SURF_DRAWSKY) != 0)
             {	// warp texture, no lightmaps
@@ -742,23 +742,23 @@ namespace Quarp
             // check for lightmap modification
             bool modified = false;
             for (int maps = 0; maps < BspFile.MAXLIGHTMAPS && fa.styles[maps] != 255; maps++)
-                if (_LightStyleValue[fa.styles[maps]] != fa.cached_light[maps])
+                if (_lightStyleValue[fa.styles[maps]] != fa.cached_light[maps])
                 {
                     modified = true;
                     break;
                 }
 
             if (modified ||
-                fa.dlightframe == _FrameCount ||	// dynamic this frame
+                fa.dlightframe == _frameCount ||	// dynamic this frame
                 fa.cached_dlight)			// dynamic previously
             {
-                if (_Dynamic.Value != 0)
+                if (_dynamic.Value != 0)
                 {
                     _LightMapModified[fa.lightmaptexturenum] = true;
                     UpdateRect(fa, ref _LightMapRectChange[fa.lightmaptexturenum]);
-                    int offset = fa.lightmaptexturenum * _LightMapBytes * BLOCK_WIDTH * BLOCK_HEIGHT;
-                    offset += fa.light_t * BLOCK_WIDTH * _LightMapBytes + fa.light_s * _LightMapBytes;
-                    BuildLightMap(fa, new ByteArraySegment(_LightMaps, offset), BLOCK_WIDTH * _LightMapBytes);
+                    int offset = fa.lightmaptexturenum * _LightMapBytes * BlockWidth * BlockHeight;
+                    offset += fa.light_t * BlockWidth * _LightMapBytes + fa.light_s * _LightMapBytes;
+                    BuildLightMap(fa, new ByteArraySegment(_LightMaps, offset), BlockWidth * _LightMapBytes);
                 }
             }
         }
@@ -802,10 +802,10 @@ namespace Quarp
         /// </summary>
         private static void MirrorChain(msurface_t s)
         {
-            if (_IsMirror)
+            if (_isMirror)
                 return;
-            _IsMirror = true;
-            _MirrorPlane = s.plane;
+            _isMirror = true;
+            _mirrorPlane = s.plane;
         }
 
         /// <summary>
@@ -816,7 +816,7 @@ namespace Quarp
             if (node.contents == Contents.CONTENTS_SOLID)
                 return;		// solid
 
-            if (node.visframe != _VisFrameCount)
+            if (node.visframe != _visFrameCount)
                 return;
             if (CullBox(ref node.mins, ref node.maxs))
                 return;
@@ -835,7 +835,7 @@ namespace Quarp
                 {
                     do
                     {
-                        marks[mark].visframe = _FrameCount;
+                        marks[mark].visframe = _frameCount;
                         mark++;
                     } while (--c != 0);
                 }
@@ -858,19 +858,19 @@ namespace Quarp
             switch (plane.type)
             {
                 case Planes.PLANE_X:
-                    dot = _ModelOrg.X - plane.dist;
+                    dot = _modelOrg.X - plane.dist;
                     break;
 
                 case Planes.PLANE_Y:
-                    dot = _ModelOrg.Y - plane.dist;
+                    dot = _modelOrg.Y - plane.dist;
                     break;
 
                 case Planes.PLANE_Z:
-                    dot = _ModelOrg.Z - plane.dist;
+                    dot = _modelOrg.Z - plane.dist;
                     break;
 
                 default:
-                    dot = Vector3.Dot(_ModelOrg, plane.normal) - plane.dist;
+                    dot = Vector3.Dot(_modelOrg, plane.normal) - plane.dist;
                     break;
             }
 
@@ -894,7 +894,7 @@ namespace Quarp
 
                 for (; c != 0; c--, offset++)
                 {
-                    if (surf[offset].visframe != _FrameCount)
+                    if (surf[offset].visframe != _frameCount)
                         continue;
 
                     // don't backface underwater surfaces, because they warp
@@ -904,7 +904,7 @@ namespace Quarp
                     // if sorting by texture, just store it out
                     if (_glTexSort.Value != 0)
                     {
-                        if (!_IsMirror || surf[offset].texinfo.texture != Client.cl.worldmodel.textures[_MirrorTextureNum])
+                        if (!_isMirror || surf[offset].texinfo.texture != Client.cl.worldmodel.textures[_mirrorTextureNum])
                         {
                             surf[offset].texturechain = surf[offset].texinfo.texture.texturechain;
                             surf[offset].texinfo.texture.texturechain = surf[offset];
@@ -1017,16 +1017,16 @@ namespace Quarp
             if ((s.flags & Surf.SURF_DRAWSKY) != 0)
             {
                 DisableMultitexture();
-                Drawer.Bind(_SolidSkyTexture);
-                _SpeedScale = (float)Host.RealTime * 8;
-                _SpeedScale -= (int)_SpeedScale & ~127;
+                Drawer.Bind(SolidSkyTexture);
+                _speedScale = (float)Host.RealTime * 8;
+                _speedScale -= (int)_speedScale & ~127;
 
                 EmitSkyPolys(s);
 
                 GL.Enable(EnableCap.Blend);
-                Drawer.Bind(_AlphaSkyTexture);
-                _SpeedScale = (float)Host.RealTime * 16;
-                _SpeedScale -= (int)_SpeedScale & ~127;
+                Drawer.Bind(AlphaSkyTexture);
+                _speedScale = (float)Host.RealTime * 16;
+                _speedScale -= (int)_speedScale & ~127;
 
                 EmitSkyPolys(s);
 
@@ -1133,17 +1133,17 @@ namespace Quarp
             try
             {
                 long addr = handle.AddrOfPinnedObject().ToInt64() +
-                    (i * BLOCK_HEIGHT + theRect.t) * BLOCK_WIDTH * _LightMapBytes;
+                    (i * BlockHeight + theRect.t) * BlockWidth * _LightMapBytes;
                 GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, theRect.t,
-                    BLOCK_WIDTH, theRect.h, Drawer.LightMapFormat,
+                    BlockWidth, theRect.h, Drawer.LightMapFormat,
                     PixelType.UnsignedByte, new IntPtr(addr));
             }
             finally
             {
                 handle.Free();
             }
-            theRect.l = BLOCK_WIDTH;
-            theRect.t = BLOCK_HEIGHT;
+            theRect.l = BlockWidth;
+            theRect.t = BlockHeight;
             theRect.h = 0;
             theRect.w = 0;
             _LightMapRectChange[i] = theRect;
@@ -1155,7 +1155,7 @@ namespace Quarp
         /// </summary>
         static texture_t TextureAnimation(texture_t t)
         {
-            if (_CurrentEntity.frame != 0)
+            if (_currentEntity.Frame != 0)
             {
                 if (t.alternate_anims != null)
                     t = t.alternate_anims;
@@ -1184,7 +1184,7 @@ namespace Quarp
         /// </summary>
         static void RenderDynamicLightmaps(msurface_t fa)
         {
-            _BrushPolys++;
+            _brushPolys++;
 
             if ((fa.flags & (Surf.SURF_DRAWSKY | Surf.SURF_DRAWTURB)) != 0)
                 return;
@@ -1195,23 +1195,23 @@ namespace Quarp
             // check for lightmap modification
             bool flag = false;
             for (int maps = 0; maps < BspFile.MAXLIGHTMAPS && fa.styles[maps] != 255; maps++)
-                if (_LightStyleValue[fa.styles[maps]] != fa.cached_light[maps])
+                if (_lightStyleValue[fa.styles[maps]] != fa.cached_light[maps])
                 {
                     flag = true;
                     break;
                 }
 
             if (flag ||
-                fa.dlightframe == _FrameCount || // dynamic this frame
+                fa.dlightframe == _frameCount || // dynamic this frame
                 fa.cached_dlight)	// dynamic previously
             {
-                if (_Dynamic.Value != 0)
+                if (_dynamic.Value != 0)
                 {
                     _LightMapModified[fa.lightmaptexturenum] = true;
                     UpdateRect(fa, ref _LightMapRectChange[fa.lightmaptexturenum]);
-                    int offset = fa.lightmaptexturenum * _LightMapBytes * BLOCK_WIDTH * BLOCK_HEIGHT +
-                        fa.light_t * BLOCK_WIDTH * _LightMapBytes + fa.light_s * _LightMapBytes;
-                    BuildLightMap(fa, new ByteArraySegment(_LightMaps, offset), BLOCK_WIDTH * _LightMapBytes);
+                    int offset = fa.lightmaptexturenum * _LightMapBytes * BlockWidth * BlockHeight +
+                        fa.light_t * BlockWidth * _LightMapBytes + fa.light_s * _LightMapBytes;
+                    BuildLightMap(fa, new ByteArraySegment(_LightMaps, offset), BlockWidth * _LightMapBytes);
                 }
             }
         }
@@ -1219,30 +1219,30 @@ namespace Quarp
         /// <summary>
         /// R_DrawBrushModel
         /// </summary>
-        private static void DrawBrushModel(entity_t e)
+        private static void DrawBrushModel(EntityT e)
         {
-            _CurrentEntity = e;
+            _currentEntity = e;
             Drawer.CurrentTexture = -1;
 
-            model_t clmodel = e.model;
+            model_t clmodel = e.Model;
             bool rotated = false;
             Vector3 mins, maxs;
-            if (e.angles.X != 0 || e.angles.Y != 0 || e.angles.Z != 0)
+            if (e.Angles.X != 0 || e.Angles.Y != 0 || e.Angles.Z != 0)
             {
                 rotated = true;
-                mins = e.origin;
+                mins = e.Origin;
                 mins.X -= clmodel.radius;
                 mins.Y -= clmodel.radius;
                 mins.Z -= clmodel.radius;
-                maxs = e.origin;
+                maxs = e.Origin;
                 maxs.X += clmodel.radius;
                 maxs.Y += clmodel.radius;
                 maxs.Z += clmodel.radius;
             }
             else
             {
-                mins = e.origin + clmodel.mins;
-                maxs = e.origin + clmodel.maxs;
+                mins = e.Origin + clmodel.mins;
+                maxs = e.Origin + clmodel.maxs;
             }
 
             if (CullBox(ref mins, ref maxs))
@@ -1250,15 +1250,15 @@ namespace Quarp
 
             GL.Color3(1f, 1, 1);
             Array.Clear(_LightMapPolys, 0, _LightMapPolys.Length);
-            _ModelOrg = _RefDef.vieworg - e.origin;
+            _modelOrg = _refDef.Vieworg - e.Origin;
             if (rotated)
             {
-                Vector3 temp = _ModelOrg;
+                Vector3 temp = _modelOrg;
                 Vector3 forward, right, up;
-                Mathlib.AngleVectors(ref e.angles, out forward, out right, out up);
-                _ModelOrg.X = Vector3.Dot(temp, forward);
-                _ModelOrg.Y = -Vector3.Dot(temp, right);
-                _ModelOrg.Z = Vector3.Dot(temp, up);
+                Mathlib.AngleVectors(ref e.Angles, out forward, out right, out up);
+                _modelOrg.X = Vector3.Dot(temp, forward);
+                _modelOrg.Y = -Vector3.Dot(temp, right);
+                _modelOrg.Z = Vector3.Dot(temp, up);
             }
 
             // calculate dynamic lighting for bmodel if it's not an
@@ -1275,9 +1275,9 @@ namespace Quarp
             }
 
             GL.PushMatrix();
-            e.angles.X = -e.angles.X;	// stupid quake bug
+            e.Angles.X = -e.Angles.X;	// stupid quake bug
             RotateForEntity(e);
-            e.angles.X = -e.angles.X;	// stupid quake bug
+            e.Angles.X = -e.Angles.X;	// stupid quake bug
 
             int surfOffset = clmodel.firstmodelsurface;
             msurface_t[] psurf = clmodel.surfaces; //[clmodel.firstmodelsurface];
@@ -1290,7 +1290,7 @@ namespace Quarp
                 // find which side of the node we are on
                 mplane_t pplane = psurf[surfOffset].plane;
 
-                float dot = Vector3.Dot(_ModelOrg, pplane.normal) - pplane.dist;
+                float dot = Vector3.Dot(_modelOrg, pplane.normal) - pplane.dist;
 
                 // draw the polygon
                 bool planeBack = (psurf[surfOffset].flags & Surf.SURF_PLANEBACK) != 0;

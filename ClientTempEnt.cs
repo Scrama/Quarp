@@ -32,7 +32,7 @@ namespace Quarp
     partial class Client
     {
         static int _NumTempEntities; // num_temp_entities
-        static entity_t[] _TempEntities = new entity_t[MAX_TEMP_ENTITIES]; // cl_temp_entities[MAX_TEMP_ENTITIES]
+        static EntityT[] _TempEntities = new EntityT[MAX_TEMP_ENTITIES]; // cl_temp_entities[MAX_TEMP_ENTITIES]
         static beam_t[] _Beams = new beam_t[MAX_BEAMS]; // cl_beams[MAX_BEAMS]
 
         static sfx_t _SfxWizHit; // cl_sfx_wizhit
@@ -55,7 +55,7 @@ namespace Quarp
 	        _SfxRExp3 = Sound.PrecacheSound ("weapons/r_exp3.wav");
 
             for (int i = 0; i < _TempEntities.Length; i++)
-                _TempEntities[i] = new entity_t();
+                _TempEntities[i] = new EntityT();
 
             for (int i = 0; i < _Beams.Length; i++)
                 _Beams[i] = new beam_t();
@@ -76,7 +76,7 @@ namespace Quarp
                 // if coming from the player, update the start position
                 if (b.entity == cl.viewentity)
                 {
-                    b.start = _Entities[cl.viewentity].origin;
+                    b.start = _Entities[cl.viewentity].Origin;
                 }
 
                 // calculate pitch and yaw
@@ -108,15 +108,15 @@ namespace Quarp
                 float d = Mathlib.Normalize(ref dist);
                 while (d > 0)
                 {
-                    entity_t ent = NewTempEntity();
+                    EntityT ent = NewTempEntity();
                     if (ent == null)
                         return;
 
-                    ent.origin = org;
-                    ent.model = b.model;
-                    ent.angles.X = pitch;
-                    ent.angles.Y = yaw;
-                    ent.angles.Z = Sys.Random() % 360;
+                    ent.Origin = org;
+                    ent.Model = b.model;
+                    ent.Angles.X = pitch;
+                    ent.Angles.Y = yaw;
+                    ent.Angles.Z = Sys.Random() % 360;
 
                     org += dist * 30;
                     // Uze: is this code bug (i is outer loop variable!!!) or what??????????????
@@ -130,19 +130,19 @@ namespace Quarp
         /// <summary>
         /// CL_NewTempEntity
         /// </summary>
-        static entity_t NewTempEntity()
+        static EntityT NewTempEntity()
         {
             if (NumVisEdicts == MAX_VISEDICTS)
                 return null;
             if (_NumTempEntities == MAX_TEMP_ENTITIES)
                 return null;
 
-            entity_t ent = _TempEntities[_NumTempEntities];
+            EntityT ent = _TempEntities[_NumTempEntities];
             _NumTempEntities++;
             _VisEdicts[NumVisEdicts] = ent;
             NumVisEdicts++;
 
-            ent.colormap = Scr.vid.colormap;
+            ent.Colormap = Scr.vid.colormap;
             
             return ent;
         }

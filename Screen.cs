@@ -434,25 +434,25 @@ namespace Quarp
 
             int h = Hud.Height;//_VidDef.height;
 
-            refdef_t rdef = Render.RefDef;
-            rdef.vrect.width = (int)(Hud.Width * size);
-	        if (rdef.vrect.width < 96)
+            RefdefT rdef = Render.RefDef;
+            rdef.Vrect.width = (int)(Hud.Width * size);
+	        if (rdef.Vrect.width < 96)
 	        {
-		        size = 96.0f / rdef.vrect.width;
-		        rdef.vrect.width = 96;	// min for icons
+		        size = 96.0f / rdef.Vrect.width;
+		        rdef.Vrect.width = 96;	// min for icons
 	        }
 
-	        rdef.vrect.height = (int)(h * size);
+	        rdef.Vrect.height = (int)(h * size);
 
-	        rdef.vrect.x = (Hud.Width - rdef.vrect.width) / 2;
-            rdef.vrect.y = full ? 0 : (h - rdef.vrect.height) / 2;
+	        rdef.Vrect.x = (Hud.Width - rdef.Vrect.width) / 2;
+            rdef.Vrect.y = full ? 0 : (h - rdef.Vrect.height) / 2;
 
-            rdef.fov_y = _Fov.Value;
-	        rdef.fov_x = CalcFov (_Fov.Value, rdef.vrect.height, rdef.vrect.width);
+            rdef.FovY = _Fov.Value;
+	        rdef.FovX = CalcFov (_Fov.Value, rdef.Vrect.height, rdef.Vrect.width);
 
-            Con.DPrint($"fov {rdef.fov_x}\n");
+            Con.DPrint($"fov {rdef.FovX}\n");
 
-            _VRect = rdef.vrect;
+            _VRect = rdef.Vrect;
         }
 
         

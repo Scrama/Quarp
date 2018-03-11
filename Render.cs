@@ -1,32 +1,30 @@
-/// <copyright>
-///
-/// Rewritten in C# by Yury Kiselev, 2010.
-///
-/// Copyright (C) 1996-1997 Id Software, Inc.
-///
-/// This program is free software; you can redistribute it and/or
-/// modify it under the terms of the GNU General Public License
-/// as published by the Free Software Foundation; either version 2
-/// of the License, or (at your option) any later version.
-/// 
-/// This program is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-/// 
-/// See the GNU General Public License for more details.
-/// 
-/// You should have received a copy of the GNU General Public License
-/// along with this program; if not, write to the Free Software
-/// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-/// </copyright>
+// <copyright>
+//
+// Rewritten in C# by Yury Kiselev, 2010.
+//
+// Copyright (C) 1996-1997 Id Software, Inc.
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+// 
+// See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using Quarp.HudSystem;
+using System;
+using System.Runtime.InteropServices;
 
 // refresh.h -- public interface to refresh functions
 // gl_rmisc.c
@@ -37,53 +35,57 @@ namespace Quarp
     /// <summary>
     /// R_functions
     /// </summary>
-    static partial class Render
+    internal static partial class Render
     {
-        public const int MAXCLIPPLANES = 11;
-        public const int TOP_RANGE = 16;			// soldier uniform colors
-        public const int BOTTOM_RANGE = 96;
-        const float ONE_OVER_16 = 1.0f / 16.0f;
-        
-        const int MAX_LIGHTMAPS = 64;
+        public const int Maxclipplanes = 11;
+        public const int TopRange = 16;			// soldier uniform colors
+        public const int BottomRange = 96;
 
-        const int BLOCK_WIDTH = 128;
-        const int BLOCK_HEIGHT = 128;
+        private const float OneOver16 = 1.0f / 16.0f;
 
-        static refdef_t _RefDef = new refdef_t(); // refdef_t	r_refdef;
-        static texture_t _NoTextureMip; // r_notexture_mip
+        private const int MaxLightmaps = 64;
 
-        static Cvar _NoRefresh;// = { "r_norefresh", "0" };
-        static Cvar _DrawEntities;// = { "r_drawentities", "1" };
-        static Cvar _DrawViewModel;// = { "r_drawviewmodel", "1" };
-        static Cvar _Speeds;// = { "r_speeds", "0" };
-        static Cvar _FullBright;// = { "r_fullbright", "0" };
-        static Cvar _LightMap;// = { "r_lightmap", "0" };
-        static Cvar _Shadows;// = { "r_shadows", "0" };
-        static Cvar _MirrorAlpha;// = { "r_mirroralpha", "1" };
-        static Cvar _WaterAlpha;// = { "r_wateralpha", "1" };
-        static Cvar _Dynamic;// = { "r_dynamic", "1" };
-        static Cvar _NoVis;// = { "r_novis", "0" };
+        private const int BlockWidth = 128;
+        private const int BlockHeight = 128;
+
+        private static readonly RefdefT _refDef = new RefdefT(); // refdef_t	r_refdef;
+        private static texture_t _noTextureMip; // r_notexture_mip
+
+        public static Cvar Sky; // r_sky
+        public static Cvar SkyClouds; // r_skyclouds
+        public static Cvar SkyRotation; // r_skyrotation
+        private static Cvar _noRefresh;// = { "r_norefresh", "0" };
+        private static Cvar _drawEntities;// = { "r_drawentities", "1" };
+        private static Cvar _drawViewModel;// = { "r_drawviewmodel", "1" };
+        private static Cvar _speeds;// = { "r_speeds", "0" };
+        private static Cvar _fullBright;// = { "r_fullbright", "0" };
+        private static Cvar _lightMap;// = { "r_lightmap", "0" };
+        private static Cvar _shadows;// = { "r_shadows", "0" };
+        private static Cvar _mirrorAlpha;// = { "r_mirroralpha", "1" };
+        private static Cvar _waterAlpha;// = { "r_wateralpha", "1" };
+        private static Cvar _dynamic;// = { "r_dynamic", "1" };
+        private static Cvar _noVis;// = { "r_novis", "0" };
 
         private static Cvar _rInterpolateModelAnimation; //{ "r_lerp_animation", "1", true };
         private static Cvar _rInterpolateModelTransform; //{ "r_lerp_transform", "1", true };
 
-        static Cvar _glFinish;// = { "gl_finish", "0" };
-        static Cvar _glClear;// = { "gl_clear", "0" };
-        static Cvar _glCull;// = { "gl_cull", "1" };
-        static Cvar _glTexSort;// = { "gl_texsort", "1" };
-        static Cvar _glSmoothModels;// = { "gl_smoothmodels", "1" };
-        static Cvar _glAffineModels;// = { "gl_affinemodels", "0" };
-        static Cvar _glPolyBlend;// = { "gl_polyblend", "1" };
-        static Cvar _glFlashBlend;// = { "gl_flashblend", "1" };
-        static Cvar _glPlayerMip;// = { "gl_playermip", "0" };
-        static Cvar _glNoColors;// = { "gl_nocolors", "0" };
-        static Cvar _glKeepTJunctions;// = { "gl_keeptjunctions", "0" };
-        static Cvar _glReportTJunctions;// = { "gl_reporttjunctions", "0" };
-        static Cvar _glDoubleEyes;// = { "gl_doubleeys", "1" };
+        private static Cvar _glFinish;// = { "gl_finish", "0" };
+        private static Cvar _glClear;// = { "gl_clear", "0" };
+        private static Cvar _glCull;// = { "gl_cull", "1" };
+        private static Cvar _glTexSort;// = { "gl_texsort", "1" };
+        private static Cvar _glSmoothModels;// = { "gl_smoothmodels", "1" };
+        private static Cvar _glAffineModels;// = { "gl_affinemodels", "0" };
+        private static Cvar _glPolyBlend;// = { "gl_polyblend", "1" };
+        private static Cvar _glFlashBlend;// = { "gl_flashblend", "1" };
+        private static Cvar _glPlayerMip;// = { "gl_playermip", "0" };
+        private static Cvar _glNoColors;// = { "gl_nocolors", "0" };
+        private static Cvar _glKeepTJunctions;// = { "gl_keeptjunctions", "0" };
+        private static Cvar _glReportTJunctions;// = { "gl_reporttjunctions", "0" };
+        private static Cvar _glDoubleEyes;// = { "gl_doubleeys", "1" };
         private static Cvar _rViewModelShift;
 
-        static int _PlayerTextures; // playertextures	// up to 16 color translated skins
-        static bool _CacheThrash; // r_cache_thrash	// compatability
+        private static int _playerTextures; // playertextures	// up to 16 color translated skins
+        private static bool _cacheThrash; // r_cache_thrash	// compatability
         
         //
         // view origin
@@ -93,82 +95,77 @@ namespace Quarp
         public static Vector3 ViewRight; // vright
         public static Vector3 Origin; // r_origin
 
-        static int[] _LightStyleValue = new int[256]; // d_lightstylevalue  // 8.8 fraction of base light value
-        static entity_t _WorldEntity = new entity_t(); // r_worldentity
-        static entity_t _CurrentEntity; // currententity
+        private static int[] _lightStyleValue = new int[256]; // d_lightstylevalue  // 8.8 fraction of base light value
+        private static EntityT _worldEntity = new EntityT(); // r_worldentity
+        private static EntityT _currentEntity; // currententity
 
-        static mleaf_t _ViewLeaf; // r_viewleaf
-        static mleaf_t _OldViewLeaf; // r_oldviewleaf
+        private static mleaf_t _viewLeaf; // r_viewleaf
+        private static mleaf_t _oldViewLeaf; // r_oldviewleaf
 
-        static int _SkyTextureNum; // skytexturenum
-        static int _MirrorTextureNum; // mirrortexturenum	// quake texturenum, not gltexturenum
+        public static int SkyTextureNum; // skytexturenum
+        private static int _mirrorTextureNum; // mirrortexturenum	// quake texturenum, not gltexturenum
 
-        static int[,] _Allocated = new int[MAX_LIGHTMAPS,BLOCK_WIDTH]; // allocated
+        private static int[,] _allocated = new int[MaxLightmaps,BlockWidth]; // allocated
 
-        static int _VisFrameCount; // r_visframecount	// bumped when going to a new PVS
-        static int _FrameCount; // r_framecount		// used for dlight push checking
-        static bool _MTexEnabled; // mtexenabled
-        static int _BrushPolys; // c_brush_polys
-        static int _AliasPolys; // c_alias_polys
-        static bool _IsMirror; // mirror
-        static mplane_t _MirrorPlane; // mirror_plane
-        static float _glDepthMin; // gldepthmin
-        static float _glDepthMax; // gldepthmax
-        static int _TrickFrame; // static int trickframe from R_Clear()
-        static mplane_t[] _Frustum = new mplane_t[4]; // frustum
-        static bool _IsEnvMap = false; // envmap	// true during envmap command capture 
-        static Matrix4 _WorldMatrix; // r_world_matrix
-        static Matrix4 _BaseWorldMatrix; // r_base_world_matrix
-        static Vector3 _ModelOrg; // modelorg
-        static Vector3 _EntOrigin; // r_entorigin
-        static float _SpeedScale; // speedscale		// for top sky and bottom sky
-        static float _ShadeLight; // shadelight
-        static float _AmbientLight; // ambientlight
-        static float[] _ShadeDots = AnormDots.Values[0]; // shadedots
-        static Vector3 _ShadeVector; // shadevector
-        static int _LastPoseNum0; //lastposenum0
-        static int _LastPoseNum; // lastposenum
-        static Vector3 _LightSpot; // lightspot
+        private static int _visFrameCount; // r_visframecount	// bumped when going to a new PVS
+        private static int _frameCount; // r_framecount		// used for dlight push checking
+        private static bool _mTexEnabled; // mtexenabled
+        private static int _brushPolys; // c_brush_polys
+        private static int _aliasPolys; // c_alias_polys
+        private static bool _isMirror; // mirror
+        private static mplane_t _mirrorPlane; // mirror_plane
+        private static float _glDepthMin; // gldepthmin
+        private static float _glDepthMax; // gldepthmax
+        private static int _trickFrame; // static int trickframe from R_Clear()
+        private static mplane_t[] _frustum = new mplane_t[4]; // frustum
+        private static bool _isEnvMap = false; // envmap	// true during envmap command capture 
+        private static Matrix4 _worldMatrix; // r_world_matrix
+        private static Matrix4 _baseWorldMatrix; // r_base_world_matrix
+        private static Vector3 _modelOrg; // modelorg
+        private static Vector3 _entOrigin; // r_entorigin
+        private static float _speedScale; // speedscale		// for top sky and bottom sky
+        private static float _shadeLight; // shadelight
+        private static float _ambientLight; // ambientlight
+        private static float[] _shadeDots = AnormDots.Values[0]; // shadedots
+        private static Vector3 _shadeVector; // shadevector
+        private static int _lastPoseNum0; //lastposenum0
+        private static int _lastPoseNum; // lastposenum
+        private static Vector3 _lightSpot; // lightspot
         
-        public static refdef_t RefDef
-        {
-            get { return _RefDef; }
-        }
-        public static bool CacheTrash
-        {
-            get { return _CacheThrash; }
-        }
-        public static texture_t NoTextureMip
-        {
-            get { return _NoTextureMip; }
-        }
+        public static RefdefT RefDef => _refDef;
+
+        public static bool CacheTrash => _cacheThrash;
+        public static texture_t NoTextureMip => _noTextureMip;
 
         /// <summary>
         /// R_Init
         /// </summary>
         public static void Init()
         {
-            for (int i = 0; i < _Frustum.Length; i++)
-                _Frustum[i] = new mplane_t();
+            for (int i = 0; i < _frustum.Length; i++)
+                _frustum[i] = new mplane_t();
 
             Cmd.Add("timerefresh", TimeRefresh_f);
 	        //Cmd.Add("envmap", Envmap_f);
 	        //Cmd.Add("pointfile", ReadPointFile_f);
 
-            if (_NoRefresh == null)
+            if (_noRefresh == null)
             {
-                _NoRefresh = new Cvar("r_norefresh", "0");
-                _DrawEntities = new Cvar("r_drawentities", "1");
-                _DrawViewModel = new Cvar("r_drawviewmodel", "1");
-                _Speeds = new Cvar("r_speeds", "0");
-                _FullBright = new Cvar("r_fullbright", "0");
-                _LightMap = new Cvar("r_lightmap", "0");
-                _Shadows = new Cvar("r_shadows", "0");
-                _MirrorAlpha = new Cvar("r_mirroralpha", "1");
-                _WaterAlpha = new Cvar("r_wateralpha", "1");
-                _Dynamic = new Cvar("r_dynamic", "1");
-                _NoVis = new Cvar("r_novis", "0");
-                _rViewModelShift = new Cvar("r_viewmodelshift", "");
+                Sky = new Cvar("r_sky", "", true);
+                SkyClouds = new Cvar("r_skyclouds", "0.5", true);
+                SkyRotation = new Cvar("r_skyrotation", "0 0 0");
+                _noRefresh = new Cvar("r_norefresh", "0");
+                _drawEntities = new Cvar("r_drawentities", "1");
+                _drawViewModel = new Cvar("r_drawviewmodel", "1");
+                _speeds = new Cvar("r_speeds", "0");
+                _fullBright = new Cvar("r_fullbright", "0");
+                _lightMap = new Cvar("r_lightmap", "0");
+                _shadows = new Cvar("r_shadows", "0");
+                _mirrorAlpha = new Cvar("r_mirroralpha", "1");
+                _waterAlpha = new Cvar("r_wateralpha", "1");
+                _dynamic = new Cvar("r_dynamic", "1");
+                _noVis = new Cvar("r_novis", "0");
+                _rViewModelShift = new Cvar("r_viewmodelshift", null, true);
 
                 _glFinish = new Cvar("gl_finish", "0");
                 _glClear = new Cvar("gl_clear", "0");
@@ -195,29 +192,29 @@ namespace Quarp
             InitParticleTexture();
 
             // reserve 16 textures
-            _PlayerTextures = Drawer.GenerateTextureNumberRange(16);
+            _playerTextures = Drawer.GenerateTextureNumberRange(16);
         }
         
         // R_InitTextures
         public static void InitTextures()
         {
             // create a simple checkerboard texture for the default
-            _NoTextureMip = new texture_t();
-            _NoTextureMip.pixels = new byte[16 * 16 + 8 * 8 + 4 * 4 + 2 * 2];
-            _NoTextureMip.width = _NoTextureMip.height = 16;
+            _noTextureMip = new texture_t();
+            _noTextureMip.pixels = new byte[16 * 16 + 8 * 8 + 4 * 4 + 2 * 2];
+            _noTextureMip.width = _noTextureMip.height = 16;
             int offset = 0;
-            _NoTextureMip.offsets[0] = offset;
+            _noTextureMip.offsets[0] = offset;
             offset += 16 * 16;
-            _NoTextureMip.offsets[1] = offset;
+            _noTextureMip.offsets[1] = offset;
             offset += 8 * 8;
-            _NoTextureMip.offsets[2] = offset;
+            _noTextureMip.offsets[2] = offset;
             offset += 4 * 4;
-            _NoTextureMip.offsets[3] = offset;
+            _noTextureMip.offsets[3] = offset;
 
-            byte[] dest = _NoTextureMip.pixels;
+            byte[] dest = _noTextureMip.pixels;
             for (int m = 0; m < 4; m++)
             {
-                offset = _NoTextureMip.offsets[m];
+                offset = _noTextureMip.offsets[m];
                 for (int y = 0; y < (16 >> m); y++)
                     for (int x = 0; x < (16 >> m); x++)
                     {
@@ -237,22 +234,22 @@ namespace Quarp
         /// </summary>
         public static void RenderView()
         {
-            if (_NoRefresh.Value != 0)
+            if (_noRefresh.Value != 0)
                 return;
 
-            if (_WorldEntity.model == null || Client.cl.worldmodel == null)
+            if (_worldEntity.Model == null || Client.cl.worldmodel == null)
                 Sys.Error("R_RenderView: NULL worldmodel");
 
             double time1 = 0;
-            if (_Speeds.Value != 0)
+            if (_speeds.Value != 0)
             {
                 GL.Finish();
                 time1 = Sys.GetFloatTime();
-                _BrushPolys = 0;
-                _AliasPolys = 0;
+                _brushPolys = 0;
+                _aliasPolys = 0;
             }
 
-            _IsMirror = false;
+            _isMirror = false;
 
             if (_glFinish.Value != 0)
                 GL.Finish();
@@ -270,17 +267,17 @@ namespace Quarp
 
             PolyBlend();
 
-            if (_Speeds.Value != 0)
+            if (_speeds.Value != 0)
             {
                 double time2 = Sys.GetFloatTime();
-                Con.Print("{0,3} ms  {1,4} wpoly {2,4} epoly\n", (int)((time2 - time1) * 1000), _BrushPolys, _AliasPolys);
+                Con.Print("{0,3} ms  {1,4} wpoly {2,4} epoly\n", (int)((time2 - time1) * 1000), _brushPolys, _aliasPolys);
             }
         }
 
         /// <summary>
         /// R_PolyBlend
         /// </summary>
-        static void PolyBlend()
+        private static void PolyBlend()
         {
             if (_glPolyBlend.Value == 0)
                 return;
@@ -316,24 +313,24 @@ namespace Quarp
         /// <summary>
         /// R_Mirror
         /// </summary>
-        static void Mirror()
+        private static void Mirror()
         {
-            if (!_IsMirror)
+            if (!_isMirror)
                 return;
 
-            _BaseWorldMatrix = _WorldMatrix;
+            _baseWorldMatrix = _worldMatrix;
 
-            float d = Vector3.Dot(_RefDef.vieworg, _MirrorPlane.normal) - _MirrorPlane.dist;
-            _RefDef.vieworg += _MirrorPlane.normal * -2 * d;
+            float d = Vector3.Dot(_refDef.Vieworg, _mirrorPlane.normal) - _mirrorPlane.dist;
+            _refDef.Vieworg += _mirrorPlane.normal * -2 * d;
 
-            d = Vector3.Dot(Render.ViewPn, _MirrorPlane.normal);
-            Render.ViewPn += _MirrorPlane.normal * -2 * d;
+            d = Vector3.Dot(Render.ViewPn, _mirrorPlane.normal);
+            Render.ViewPn += _mirrorPlane.normal * -2 * d;
 
-            _RefDef.viewangles = new Vector3((float)(Math.Asin(Render.ViewPn.Z) / Math.PI * 180.0),
+            _refDef.Viewangles = new Vector3((float)(Math.Asin(Render.ViewPn.Z) / Math.PI * 180.0),
                 (float)(Math.Atan2(Render.ViewPn.Y, Render.ViewPn.X) / Math.PI * 180.0),
-                -_RefDef.viewangles.Z);
+                -_refDef.Viewangles.Z);
 
-            entity_t ent = Client.ViewEntity;
+            EntityT ent = Client.ViewEntity;
             if (Client.NumVisEdicts < Client.MAX_VISEDICTS)
             {
                 Client.VisEdicts[Client.NumVisEdicts] = ent;
@@ -356,20 +353,20 @@ namespace Quarp
             // blend on top
             GL.Enable(EnableCap.Blend);
             GL.MatrixMode(MatrixMode.Projection);
-            if (_MirrorPlane.normal.Z != 0)
+            if (_mirrorPlane.normal.Z != 0)
                 GL.Scale(1f, -1, 1);
             else
                 GL.Scale(-1f, 1, 1);
             GL.CullFace(CullFaceMode.Front);
             GL.MatrixMode(MatrixMode.Modelview);
 
-            GL.LoadMatrix(ref _BaseWorldMatrix);
+            GL.LoadMatrix(ref _baseWorldMatrix);
 
-            GL.Color4(1, 1, 1, _MirrorAlpha.Value);
-            msurface_t s = Client.cl.worldmodel.textures[_MirrorTextureNum].texturechain;
+            GL.Color4(1, 1, 1, _mirrorAlpha.Value);
+            msurface_t s = Client.cl.worldmodel.textures[_mirrorTextureNum].texturechain;
             for (; s != null; s = s.texturechain)
                 RenderBrushPoly(s);
-            Client.cl.worldmodel.textures[_MirrorTextureNum].texturechain = null;
+            Client.cl.worldmodel.textures[_mirrorTextureNum].texturechain = null;
             GL.Disable(EnableCap.Blend);
             GL.Color4(1f, 1, 1, 1);
         }
@@ -377,18 +374,18 @@ namespace Quarp
         /// <summary>
         /// R_DrawViewModel
         /// </summary>
-        static void DrawViewModel()
+        private static void DrawViewModel()
         {
-            if (_DrawViewModel.Value == 0)
+            if (_drawViewModel.Value == 0)
                 return;
 
             if (Chase.IsActive)
                 return;
 
-            if (_IsEnvMap)
+            if (_isEnvMap)
                 return;
 
-            if (_DrawEntities.Value == 0)
+            if (_drawEntities.Value == 0)
                 return;
 
             if (Client.cl.HasItems(QItems.IT_INVISIBILITY))
@@ -397,16 +394,16 @@ namespace Quarp
             if (Client.cl.stats[QStats.STAT_HEALTH] <= 0)
                 return;
 
-            _CurrentEntity = Client.ViewEnt;
-            if (_CurrentEntity.model == null)
+            _currentEntity = Client.ViewEnt;
+            if (_currentEntity.Model == null)
                 return;
 
-            int j = LightPoint(ref _CurrentEntity.origin);
+            int j = LightPoint(ref _currentEntity.Origin);
 
             if (j < 24)
                 j = 24;		// allways give some light on gun
-            _AmbientLight = j;
-            _ShadeLight = j;
+            _ambientLight = j;
+            _shadeLight = j;
 
             // add dynamic lights		
             for (int lnum = 0; lnum < Client.MAX_DLIGHTS; lnum++)
@@ -417,10 +414,10 @@ namespace Quarp
                 if (dl.die < Client.cl.time)
                     continue;
 
-                Vector3 dist = _CurrentEntity.origin - dl.origin;
+                Vector3 dist = _currentEntity.Origin - dl.origin;
                 float add = dl.radius - dist.Length;
                 if (add > 0)
-                    _AmbientLight += add;
+                    _ambientLight += add;
             }
 
             // hack the depth range to prevent view model from poking into walls
@@ -444,7 +441,7 @@ namespace Quarp
                 }
             }
 
-            DrawAliasModel(_CurrentEntity, _viewModelShift);
+            DrawAliasModel(_currentEntity, _viewModelShift);
             _rInterpolateModelTransform.Set(bkp.ToString());
 
             GL.DepthRange(_glDepthMin, _glDepthMax);
@@ -458,13 +455,13 @@ namespace Quarp
         /// R_RenderScene
         /// r_refdef must be set before the first call
         /// </summary>
-        static void RenderScene()
+        private static void RenderScene()
         {
             SetupFrame();
 
             SetFrustum();
 
-            SetupGL();
+            SetupGl();
 
             MarkLeaves();	// done here so we know if we're in water
 
@@ -490,22 +487,22 @@ namespace Quarp
         /// </summary>
         private static void DrawEntitiesOnList()
         {
-            if (_DrawEntities.Value == 0)
+            if (_drawEntities.Value == 0)
                 return;
 
             // draw sprites seperately, because of alpha blending
             for (int i = 0; i < Client.NumVisEdicts; i++)
             {
-                _CurrentEntity = Client.VisEdicts[i];
+                _currentEntity = Client.VisEdicts[i];
 
-                switch (_CurrentEntity.model.type)
+                switch (_currentEntity.Model.type)
                 {
                     case modtype_t.mod_alias:
-                        DrawAliasModel(_CurrentEntity);
+                        DrawAliasModel(_currentEntity);
                         break;
 
                     case modtype_t.mod_brush:
-                        DrawBrushModel(_CurrentEntity);
+                        DrawBrushModel(_currentEntity);
                         break;
 
                     default:
@@ -515,12 +512,12 @@ namespace Quarp
 
             for (int i = 0; i < Client.NumVisEdicts; i++)
             {
-                _CurrentEntity = Client.VisEdicts[i];
+                _currentEntity = Client.VisEdicts[i];
 
-                switch (_CurrentEntity.model.type)
+                switch (_currentEntity.Model.type)
                 {
                     case modtype_t.mod_sprite:
-                        DrawSpriteModel(_CurrentEntity);
+                        DrawSpriteModel(_currentEntity);
                         break;
                 }
             }
@@ -529,18 +526,18 @@ namespace Quarp
         /// <summary>
         /// R_DrawSpriteModel
         /// </summary>
-        private static void DrawSpriteModel(entity_t e)
+        private static void DrawSpriteModel(EntityT e)
         {
             // don't even bother culling, because it's just a single
             // polygon without a surface cache
             mspriteframe_t frame = GetSpriteFrame(e);
-            msprite_t psprite = (msprite_t)e.model.cache.data; // Uze: changed from _CurrentEntity to e
+            msprite_t psprite = (msprite_t)e.Model.cache.data; // Uze: changed from _CurrentEntity to e
 
-            Vector3 v_forward, right, up;
+            Vector3 vForward, right, up;
             if (psprite.type == SPR.SPR_ORIENTED)
             {
                 // bullet marks on walls
-                Mathlib.AngleVectors(ref e.angles, out v_forward, out right, out up); // Uze: changed from _CurrentEntity to e
+                Mathlib.AngleVectors(ref e.Angles, out vForward, out right, out up); // Uze: changed from _CurrentEntity to e
             }
             else
             {	// normal sprite
@@ -558,19 +555,19 @@ namespace Quarp
             GL.Begin(PrimitiveType.Quads);
 
             GL.TexCoord2(0f, 1);
-            Vector3 point = e.origin + up * frame.down + right * frame.left;
+            Vector3 point = e.Origin + up * frame.down + right * frame.left;
             GL.Vertex3(point);
 
             GL.TexCoord2(0f, 0);
-            point = e.origin + up * frame.up + right * frame.left;
+            point = e.Origin + up * frame.up + right * frame.left;
             GL.Vertex3(point);
 
             GL.TexCoord2(1f, 0);
-            point = e.origin + up * frame.up + right * frame.right;
+            point = e.Origin + up * frame.up + right * frame.right;
             GL.Vertex3(point);
 
             GL.TexCoord2(1f, 1);
-            point = e.origin + up * frame.down + right * frame.right;
+            point = e.Origin + up * frame.down + right * frame.right;
             GL.Vertex3(point);
 
             GL.End();
@@ -580,10 +577,10 @@ namespace Quarp
         /// <summary>
         /// R_GetSpriteFrame
         /// </summary>
-        static mspriteframe_t GetSpriteFrame(entity_t currententity)
+        private static mspriteframe_t GetSpriteFrame(EntityT currententity)
         {
-            msprite_t psprite = (msprite_t)currententity.model.cache.data;
-            int frame = currententity.frame;
+            msprite_t psprite = (msprite_t)currententity.Model.cache.data;
+            int frame = currententity.Frame;
 
             if ((frame >= psprite.numframes) || (frame < 0))
             {
@@ -602,7 +599,7 @@ namespace Quarp
                 float[] pintervals = pspritegroup.intervals;
                 int numframes = pspritegroup.numframes;
                 float fullinterval = pintervals[numframes - 1];
-                float time = (float)Client.cl.time + currententity.syncbase;
+                float time = (float)Client.cl.time + currententity.Syncbase;
 
                 // when loading in Mod_LoadSpriteGroup, we guaranteed all interval values
                 // are positive, so we don't have to worry about division by 0
@@ -619,7 +616,7 @@ namespace Quarp
             return pspriteframe;
         }
 
-        private static void DrawAliasModel(entity_t e)
+        private static void DrawAliasModel(EntityT e)
         {
             DrawAliasModel(e, ZeroShift);
         }
@@ -627,74 +624,74 @@ namespace Quarp
         /// <summary>
         /// R_DrawAliasModel
         /// </summary>
-        private static void DrawAliasModel(entity_t e, Vector3 shift)
+        private static void DrawAliasModel(EntityT e, Vector3 shift)
         {
-            model_t clmodel = _CurrentEntity.model;
-            Vector3 mins = _CurrentEntity.origin + clmodel.mins;
-            Vector3 maxs = _CurrentEntity.origin + clmodel.maxs;
+            model_t clmodel = _currentEntity.Model;
+            Vector3 mins = _currentEntity.Origin + clmodel.mins;
+            Vector3 maxs = _currentEntity.Origin + clmodel.maxs;
 
             if (CullBox(ref mins, ref maxs))
                 return;
 
-            _EntOrigin = _CurrentEntity.origin;
-            _ModelOrg = Origin - _EntOrigin;
+            _entOrigin = _currentEntity.Origin;
+            _modelOrg = Origin - _entOrigin;
 
             //
             // get lighting information
             //
 
-            _AmbientLight = _ShadeLight = LightPoint(ref _CurrentEntity.origin);
+            _ambientLight = _shadeLight = LightPoint(ref _currentEntity.Origin);
 
             // allways give the gun some light
-            if (e == Client.cl.viewent && _AmbientLight < 24)
-                _AmbientLight = _ShadeLight = 24;
+            if (e == Client.cl.viewent && _ambientLight < 24)
+                _ambientLight = _shadeLight = 24;
 
             for (int lnum = 0; lnum < Client.MAX_DLIGHTS; lnum++)
             {
                 if (Client.DLights[lnum].die >= Client.cl.time)
                 {
-                    Vector3 dist = _CurrentEntity.origin - Client.DLights[lnum].origin;
+                    Vector3 dist = _currentEntity.Origin - Client.DLights[lnum].origin;
                     float add = Client.DLights[lnum].radius - dist.Length;
                     if (add > 0)
                     {
-                        _AmbientLight += add;
+                        _ambientLight += add;
                         //ZOID models should be affected by dlights as well
-                        _ShadeLight += add;
+                        _shadeLight += add;
                     }
                 }
             }
 
             // clamp lighting so it doesn't overbright as much
-            if (_AmbientLight > 128)
-                _AmbientLight = 128;
-            if (_AmbientLight + _ShadeLight > 192)
-                _ShadeLight = 192 - _AmbientLight;
+            if (_ambientLight > 128)
+                _ambientLight = 128;
+            if (_ambientLight + _shadeLight > 192)
+                _shadeLight = 192 - _ambientLight;
 
             // ZOID: never allow players to go totally black
-            int playernum = Array.IndexOf(Client.Entities, _CurrentEntity, 0, Client.cl.maxclients);
+            int playernum = Array.IndexOf(Client.Entities, _currentEntity, 0, Client.cl.maxclients);
             if (playernum >= 1)// && i <= cl.maxclients)
-                if (_AmbientLight < 8)
-                    _AmbientLight = _ShadeLight = 8;
+                if (_ambientLight < 8)
+                    _ambientLight = _shadeLight = 8;
 
             // HACK HACK HACK -- no fullbright colors, so make torches full light
             if (clmodel.name == "progs/flame2.mdl" || clmodel.name == "progs/flame.mdl")
-                _AmbientLight = _ShadeLight = 256;
+                _ambientLight = _shadeLight = 256;
 
-            _ShadeDots = AnormDots.Values[((int)(e.angles.Y * (AnormDots.SHADEDOT_QUANT / 360.0))) & (AnormDots.SHADEDOT_QUANT - 1)];
-            _ShadeLight = _ShadeLight / 200.0f;
+            _shadeDots = AnormDots.Values[((int)(e.Angles.Y * (AnormDots.SHADEDOT_QUANT / 360.0))) & (AnormDots.SHADEDOT_QUANT - 1)];
+            _shadeLight = _shadeLight / 200.0f;
 
-            double an = e.angles.Y / 180.0 * Math.PI;
-            _ShadeVector.X = (float)Math.Cos(-an);
-            _ShadeVector.Y = (float)Math.Sin(-an);
-            _ShadeVector.Z = 1;
-            Mathlib.Normalize(ref _ShadeVector);
+            double an = e.Angles.Y / 180.0 * Math.PI;
+            _shadeVector.X = (float)Math.Cos(-an);
+            _shadeVector.Y = (float)Math.Sin(-an);
+            _shadeVector.Z = 1;
+            Mathlib.Normalize(ref _shadeVector);
 
             //
             // locate the proper data
             //
-            aliashdr_t paliashdr = Mod.GetExtraData(_CurrentEntity.model);
+            aliashdr_t paliashdr = Mod.GetExtraData(_currentEntity.Model);
 
-            _AliasPolys += paliashdr.numtris;
+            _aliasPolys += paliashdr.numtris;
 
             //
             // draw all the triangles
@@ -722,13 +719,13 @@ namespace Quarp
             }
 
             int anim = (int)(Client.cl.time * 10) & 3;
-            Drawer.Bind(paliashdr.gl_texturenum[_CurrentEntity.skinnum, anim]);
+            Drawer.Bind(paliashdr.gl_texturenum[_currentEntity.Skinnum, anim]);
 
             // we can't dynamically colormap textures, so they are cached
             // seperately for the players.  Heads are just uncolored.
-            if (_CurrentEntity.colormap != Scr.vid.colormap && _glNoColors.Value == 0 && playernum >= 1)
+            if (_currentEntity.Colormap != Scr.vid.colormap && _glNoColors.Value == 0 && playernum >= 1)
             {
-                Drawer.Bind(_PlayerTextures - 1 + playernum);
+                Drawer.Bind(_playerTextures - 1 + playernum);
             }
 
             if (_glSmoothModels.Value != 0)
@@ -743,7 +740,7 @@ namespace Quarp
             {
                 try
                 {
-                    SetupAliasBlendedFrame(_CurrentEntity.frame, paliashdr, _CurrentEntity);
+                    SetupAliasBlendedFrame(_currentEntity.Frame, paliashdr, _currentEntity);
                 }
                 catch (Exception ex)
                 {
@@ -752,7 +749,7 @@ namespace Quarp
                 }
             }
             else
-                SetupAliasFrame(_CurrentEntity.frame, paliashdr);
+                SetupAliasFrame(_currentEntity.Frame, paliashdr);
 
             GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Replace);
 
@@ -762,14 +759,14 @@ namespace Quarp
 
             GL.PopMatrix();
 
-            if (_Shadows.Value != 0)
+            if (_shadows.Value != 0)
             {
                 GL.PushMatrix();
                 RotateForEntity(e);
                 GL.Disable(EnableCap.Texture2D);
                 GL.Enable(EnableCap.Blend);
                 GL.Color4(0, 0, 0, 0.5f);
-                DrawAliasShadow(paliashdr, _LastPoseNum);
+                DrawAliasShadow(paliashdr, _lastPoseNum);
                 GL.Enable(EnableCap.Texture2D);
                 GL.Disable(EnableCap.Blend);
                 GL.Color4(1f, 1, 1, 1);
@@ -780,9 +777,9 @@ namespace Quarp
         /// <summary>
         /// GL_DrawAliasShadow
         /// </summary>
-        static void DrawAliasShadow(aliashdr_t paliashdr, int posenum)
+        private static void DrawAliasShadow(aliashdr_t paliashdr, int posenum)
         {
-            float lheight = _CurrentEntity.origin.Z - _LightSpot.Z;
+            float lheight = _currentEntity.Origin.Z - _lightSpot.Z;
             float height = 0;
             trivertx_t[] verts = paliashdr.posedata;
             int voffset = posenum * paliashdr.poseverts;
@@ -819,8 +816,8 @@ namespace Quarp
                         verts[voffset].v[2] * paliashdr.scale.Z + paliashdr.scale_origin.Z
                     );
 
-                    point.X -= _ShadeVector.X * (point.Z + lheight);
-                    point.Y -= _ShadeVector.Y * (point.Z + lheight);
+                    point.X -= _shadeVector.X * (point.Z + lheight);
+                    point.Y -= _shadeVector.Y * (point.Z + lheight);
                     point.Z = height;
 
                     GL.Vertex3(point);
@@ -835,7 +832,7 @@ namespace Quarp
         /// <summary>
         /// R_SetupAliasFrame
         /// </summary>
-        static void SetupAliasFrame(int frame, aliashdr_t paliashdr)
+        private static void SetupAliasFrame(int frame, aliashdr_t paliashdr)
         {
             if ((frame >= paliashdr.numframes) || (frame < 0))
             {
@@ -862,7 +859,7 @@ namespace Quarp
          fenix@io.com: model animation interpolation
          =================
          */
-        static void SetupAliasBlendedFrame(int frame, aliashdr_t paliashdr, entity_t e)
+        private static void SetupAliasBlendedFrame(int frame, aliashdr_t paliashdr, EntityT e)
         {
             double blend;
 
@@ -913,9 +910,9 @@ namespace Quarp
         /// <summary>
         /// GL_DrawAliasFrame
         /// </summary>
-        static void DrawAliasFrame(aliashdr_t paliashdr, int posenum)
+        private static void DrawAliasFrame(aliashdr_t paliashdr, int posenum)
         {
-            _LastPoseNum = posenum;
+            _lastPoseNum = posenum;
 
             trivertx_t[] verts = paliashdr.posedata;
             int vertsOffset = posenum * paliashdr.poseverts;
@@ -951,7 +948,7 @@ namespace Quarp
                     GL.TexCoord2(u1.f0, u2.f0);
 
                     // normals and vertexes come from the frame list
-                    float l = _ShadeDots[verts[vertsOffset].lightnormalindex] * _ShadeLight;
+                    float l = _shadeDots[verts[vertsOffset].lightnormalindex] * _shadeLight;
                     GL.Color3(l, l, l);
                     GL.Vertex3((float)verts[vertsOffset].v[0], verts[vertsOffset].v[1], verts[vertsOffset].v[2]);
                     vertsOffset++;
@@ -967,10 +964,10 @@ namespace Quarp
          fenix@io.com: model animation interpolation
          =============
          */
-        static void DrawAliasBlendedFrame(aliashdr_t paliashdr, int pose1, int pose2, float blend)
+        private static void DrawAliasBlendedFrame(aliashdr_t paliashdr, int pose1, int pose2, float blend)
         {
-            _LastPoseNum0 = pose1;
-            _LastPoseNum = pose2;
+            _lastPoseNum0 = pose1;
+            _lastPoseNum = pose2;
 
             var verts = paliashdr.posedata;
             var offset1 = pose1 * paliashdr.poseverts;
@@ -1018,10 +1015,10 @@ namespace Quarp
                     // normals and vertexes come from the frame list
                     // blend the light intensity from the two frames together
                     v3f d;
-                    d.x = _ShadeDots[verts[offset2].lightnormalindex] -
-                          _ShadeDots[verts[offset1].lightnormalindex];
+                    d.x = _shadeDots[verts[offset2].lightnormalindex] -
+                          _shadeDots[verts[offset1].lightnormalindex];
 
-                    var l = _ShadeLight * (_ShadeDots[verts[offset1].lightnormalindex] + blend * d.x);
+                    var l = _shadeLight * (_shadeDots[verts[offset1].lightnormalindex] + blend * d.x);
                     GL.Color3(l, l, l);
 
                     Mathlib.VectorSubtract(ref verts[offset2].v, ref verts[offset1].v, out d);
@@ -1043,13 +1040,13 @@ namespace Quarp
         /// <summary>
         /// R_RotateForEntity
         /// </summary>
-        static void RotateForEntity(entity_t e)
+        private static void RotateForEntity(EntityT e)
         {
-            GL.Translate(e.origin);
+            GL.Translate(e.Origin);
 
-            GL.Rotate(e.angles.Y, 0, 0, 1);
-            GL.Rotate(-e.angles.X, 0, 1, 0);
-            GL.Rotate(e.angles.Z, 1, 0, 0);
+            GL.Rotate(e.Angles.Y, 0, 0, 1);
+            GL.Rotate(-e.Angles.X, 0, 1, 0);
+            GL.Rotate(e.Angles.Z, 1, 0, 0);
         }
 
         /*
@@ -1059,7 +1056,7 @@ namespace Quarp
         fenix@io.com: model transform interpolation
         =============
         */
-        static void BlendedRotateForEntity(entity_t e)
+        private static void BlendedRotateForEntity(EntityT e)
         {
             double blend;
             Vector3 d;
@@ -1073,14 +1070,14 @@ namespace Quarp
             {
                 e.TranslateStartTime = Host.RealTime;
                 e.Origin1 = e.Origin2;
-                e.Origin2 = e.origin;
+                e.Origin2 = e.Origin;
             }
 
-            if (!e.origin.Equals(e.Origin2))
+            if (!e.Origin.Equals(e.Origin2))
             {
                 e.TranslateStartTime = Host.RealTime;
                 e.Origin1 = e.Origin2;
-                e.Origin2 = e.origin;
+                e.Origin2 = e.Origin;
                 blend = 0;
             }
             else
@@ -1106,14 +1103,14 @@ namespace Quarp
             if (e.RotateStartTime == 0 || timepassed > 1)
             {
                 e.RotateStartTime = Host.RealTime;
-                e.Angles1 = e.angles;
+                e.Angles1 = e.Angles;
                 e.Angles2 = e.Angles1;
             }
 
-            if (!e.angles.Equals(e.Angles2))
+            if (!e.Angles.Equals(e.Angles2))
             {
                 e.RotateStartTime = Host.RealTime;
-                e.Angles1 = e.angles;
+                e.Angles1 = e.Angles;
                 e.Angles2 = e.Angles1;
                 blend = 0;
             }
@@ -1148,17 +1145,17 @@ namespace Quarp
         /// <summary>
         /// R_SetupGL
         /// </summary>
-        private static void SetupGL()
+        private static void SetupGl()
         {
             //
             // set up viewpoint
             //
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadIdentity();
-            int x = _RefDef.vrect.x * Scr.glWidth / Hud.Width;
-            int x2 = (_RefDef.vrect.x + _RefDef.vrect.width) * Scr.glWidth / Hud.Width;
-            int y = (Hud.Height - _RefDef.vrect.y) * Scr.glHeight / Hud.Height;
-            int y2 = (Hud.Height - (_RefDef.vrect.y + _RefDef.vrect.height)) * Scr.glHeight / Hud.Height;
+            int x = _refDef.Vrect.x * Scr.glWidth / Hud.Width;
+            int x2 = (_refDef.Vrect.x + _refDef.Vrect.width) * Scr.glWidth / Hud.Width;
+            int y = (Hud.Height - _refDef.Vrect.y) * Scr.glHeight / Hud.Height;
+            int y2 = (Hud.Height - (_refDef.Vrect.y + _refDef.Vrect.height)) * Scr.glHeight / Hud.Height;
 
             // fudge around because of frac screen scale
             if (x > 0)
@@ -1173,19 +1170,19 @@ namespace Quarp
             int w = x2 - x;
             int h = y - y2;
 
-            if (_IsEnvMap)
+            if (_isEnvMap)
             {
                 x = y2 = 0;
                 w = h = 256;
             }
 
             GL.Viewport(Scr.glX + x, Scr.glY + y2, w, h);
-            float screenaspect = (float)_RefDef.vrect.width / _RefDef.vrect.height;
-            MYgluPerspective(_RefDef.fov_y, screenaspect, 4, 4096);
+            float screenaspect = (float)_refDef.Vrect.width / _refDef.Vrect.height;
+            MYgluPerspective(_refDef.FovY, screenaspect, 4, RenderUtils.Skybox.SkySize*2);
 
-            if (_IsMirror)
+            if (_isMirror)
             {
-                if (_MirrorPlane.normal.Z != 0)
+                if (_mirrorPlane.normal.Z != 0)
                     GL.Scale(1f, -1f, 1f);
                 else
                     GL.Scale(-1f, 1f, 1f);
@@ -1200,12 +1197,12 @@ namespace Quarp
 
             GL.Rotate(-90f, 1, 0, 0);	    // put Z going up
             GL.Rotate(90f, 0, 0, 1);	    // put Z going up
-            GL.Rotate(-_RefDef.viewangles.Z, 1, 0, 0);
-            GL.Rotate(-_RefDef.viewangles.X, 0, 1, 0);
-            GL.Rotate(-_RefDef.viewangles.Y, 0, 0, 1);
-            GL.Translate(-_RefDef.vieworg.X, -_RefDef.vieworg.Y, -_RefDef.vieworg.Z);
+            GL.Rotate(-_refDef.Viewangles.Z, 1, 0, 0);
+            GL.Rotate(-_refDef.Viewangles.X, 0, 1, 0);
+            GL.Rotate(-_refDef.Viewangles.Y, 0, 0, 1);
+            GL.Translate(-_refDef.Vieworg.X, -_refDef.Vieworg.Y, -_refDef.Vieworg.Z);
 
-            GL.GetFloat(GetPName.ModelviewMatrix, out _WorldMatrix);
+            GL.GetFloat(GetPName.ModelviewMatrix, out _worldMatrix);
 
             //
             // set drawing parms
@@ -1220,7 +1217,7 @@ namespace Quarp
             GL.Enable(EnableCap.DepthTest);
         }
 
-        static void MYgluPerspective(double fovy, double aspect, double zNear, double zFar)
+        private static void MYgluPerspective(double fovy, double aspect, double zNear, double zFar)
         {
             double ymax = zNear * Math.Tan(fovy * Math.PI / 360.0);
             double ymin = -ymax;
@@ -1234,38 +1231,38 @@ namespace Quarp
         /// <summary>
         /// R_SetFrustum
         /// </summary>
-        static void SetFrustum()
+        private static void SetFrustum()
         {
-            if (_RefDef.fov_x == 90)
+            if (_refDef.FovX == 90)
             {
                 // front side is visible
-                _Frustum[0].normal = Render.ViewPn + Render.ViewRight;
-                _Frustum[1].normal = Render.ViewPn - Render.ViewRight;
+                _frustum[0].normal = Render.ViewPn + Render.ViewRight;
+                _frustum[1].normal = Render.ViewPn - Render.ViewRight;
 
-                _Frustum[2].normal = Render.ViewPn + Render.ViewUp;
-                _Frustum[3].normal = Render.ViewPn - Render.ViewUp;
+                _frustum[2].normal = Render.ViewPn + Render.ViewUp;
+                _frustum[3].normal = Render.ViewPn - Render.ViewUp;
             }
             else
             {
                 // rotate VPN right by FOV_X/2 degrees
-                Mathlib.RotatePointAroundVector(out _Frustum[0].normal, ref Render.ViewUp, ref Render.ViewPn, -(90 - _RefDef.fov_x / 2));
+                Mathlib.RotatePointAroundVector(out _frustum[0].normal, ref Render.ViewUp, ref Render.ViewPn, -(90 - _refDef.FovX / 2));
                 // rotate VPN left by FOV_X/2 degrees
-                Mathlib.RotatePointAroundVector(out _Frustum[1].normal, ref Render.ViewUp, ref Render.ViewPn, 90 - _RefDef.fov_x / 2);
+                Mathlib.RotatePointAroundVector(out _frustum[1].normal, ref Render.ViewUp, ref Render.ViewPn, 90 - _refDef.FovX / 2);
                 // rotate VPN up by FOV_X/2 degrees
-                Mathlib.RotatePointAroundVector(out _Frustum[2].normal, ref Render.ViewRight, ref Render.ViewPn, 90 - _RefDef.fov_y / 2);
+                Mathlib.RotatePointAroundVector(out _frustum[2].normal, ref Render.ViewRight, ref Render.ViewPn, 90 - _refDef.FovY / 2);
                 // rotate VPN down by FOV_X/2 degrees
-                Mathlib.RotatePointAroundVector(out _Frustum[3].normal, ref Render.ViewRight, ref Render.ViewPn, -(90 - _RefDef.fov_y / 2));
+                Mathlib.RotatePointAroundVector(out _frustum[3].normal, ref Render.ViewRight, ref Render.ViewPn, -(90 - _refDef.FovY / 2));
             }
 
             for (int i = 0; i < 4; i++)
             {
-                _Frustum[i].type = Planes.PLANE_ANYZ;
-                _Frustum[i].dist = Vector3.Dot(Render.Origin, _Frustum[i].normal);
-                _Frustum[i].signbits = (byte)SignbitsForPlane(_Frustum[i]);
+                _frustum[i].type = Planes.PLANE_ANYZ;
+                _frustum[i].dist = Vector3.Dot(Render.Origin, _frustum[i].normal);
+                _frustum[i].signbits = (byte)SignbitsForPlane(_frustum[i]);
             }
         }
 
-        static int SignbitsForPlane (mplane_t p)
+        private static int SignbitsForPlane (mplane_t p)
         {
 	        // for fast box on planeside test
             int bits = 0;
@@ -1278,7 +1275,7 @@ namespace Quarp
         /// <summary>
         /// R_SetupFrame
         /// </summary>
-        static void SetupFrame()
+        private static void SetupFrame()
         {
             // don't allow cheats in multiplayer
             if (Client.cl.maxclients > 1)
@@ -1286,31 +1283,31 @@ namespace Quarp
 
             AnimateLight();
 
-            _FrameCount++;
+            _frameCount++;
 
             // build the transformation matrix for the given view angles
-            Render.Origin = _RefDef.vieworg;
+            Render.Origin = _refDef.Vieworg;
 
-            Mathlib.AngleVectors(ref _RefDef.viewangles, out ViewPn, out ViewRight, out ViewUp);
+            Mathlib.AngleVectors(ref _refDef.Viewangles, out ViewPn, out ViewRight, out ViewUp);
 
             // current viewleaf
-            _OldViewLeaf = _ViewLeaf;
-            _ViewLeaf = Mod.PointInLeaf(ref Render.Origin, Client.cl.worldmodel);
+            _oldViewLeaf = _viewLeaf;
+            _viewLeaf = Mod.PointInLeaf(ref Render.Origin, Client.cl.worldmodel);
 
-            View.SetContentsColor(_ViewLeaf.contents);
+            View.SetContentsColor(_viewLeaf.contents);
             View.CalcBlend();
 
-            _CacheThrash = false;
-            _BrushPolys = 0;
-            _AliasPolys = 0;
+            _cacheThrash = false;
+            _brushPolys = 0;
+            _aliasPolys = 0;
         }
 
         /// <summary>
         /// R_Clear
         /// </summary>
-        static void Clear()
+        private static void Clear()
         {
-            if (_MirrorAlpha.Value != 1.0)
+            if (_mirrorAlpha.Value != 1.0)
             {
                 if (_glClear.Value != 0)
                     GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
@@ -1325,8 +1322,8 @@ namespace Quarp
                 if (_glClear.Value != 0)
                     GL.Clear(ClearBufferMask.ColorBufferBit);
 
-                _TrickFrame++;
-                if ((_TrickFrame & 1) != 0)
+                _trickFrame++;
+                if ((_trickFrame & 1) != 0)
                 {
                     _glDepthMin = 0;
                     _glDepthMax = 0.49999f;
@@ -1362,44 +1359,44 @@ namespace Quarp
         /// R_RemoveEfrags
         /// Call when removing an object from the world or moving it to another position
         /// </summary>
-        public static void RemoveEfrags(entity_t ent)
+        public static void RemoveEfrags(EntityT ent)
         {
-            efrag_t ef = ent.efrag;
+            EfragT ef = ent.Efrag;
 
             while (ef != null)
             {
-                mleaf_t leaf = ef.leaf;
+                mleaf_t leaf = ef.Leaf;
                 while (true)
                 {
-                    efrag_t walk = leaf.efrags;
+                    EfragT walk = leaf.efrags;
                     if (walk == null)
                         break;
                     if (walk == ef)
                     {
                         // remove this fragment
-                        leaf.efrags = ef.leafnext;
+                        leaf.efrags = ef.Leafnext;
                         break;
                     }
                     else
-                        leaf = (mleaf_t)(object)walk.leafnext;
+                        leaf = (mleaf_t)(object)walk.Leafnext;
                 }
 
-                efrag_t old = ef;
-                ef = ef.entnext;
+                EfragT old = ef;
+                ef = ef.Entnext;
 
                 // put it on the free list
-                old.entnext = Client.cl.free_efrags;
+                old.Entnext = Client.cl.free_efrags;
                 Client.cl.free_efrags = old;
             }
 
-            ent.efrag = null;
+            ent.Efrag = null;
         }
 
         /// <summary>
         /// R_TimeRefresh_f
         /// For program optimization
         /// </summary>
-        static void TimeRefresh_f()
+        private static void TimeRefresh_f()
         {
             //GL.DrawBuffer(DrawBufferMode.Front);
             GL.Finish();
@@ -1407,7 +1404,7 @@ namespace Quarp
             double start = Sys.GetFloatTime();
             for (int i = 0; i < 128; i++)
             {
-                _RefDef.viewangles.Y = (float)(i / 128.0 * 360.0);
+                _refDef.Viewangles.Y = (float)(i / 128.0 * 360.0);
                 RenderView();
                 MainForm.Instance.SwapBuffers();
             }
@@ -1439,21 +1436,21 @@ namespace Quarp
             for (int i = 0; i < 16; i++)
             {
                 if (top < 128)	// the artists made some backwards ranges.  sigh.
-                    translate[TOP_RANGE + i] = (byte)(top + i);
+                    translate[TopRange + i] = (byte)(top + i);
                 else
-                    translate[TOP_RANGE + i] = (byte)(top + 15 - i);
+                    translate[TopRange + i] = (byte)(top + 15 - i);
 
                 if (bottom < 128)
-                    translate[BOTTOM_RANGE + i] = (byte)(bottom + i);
+                    translate[BottomRange + i] = (byte)(bottom + i);
                 else
-                    translate[BOTTOM_RANGE + i] = (byte)(bottom + 15 - i);
+                    translate[BottomRange + i] = (byte)(bottom + 15 - i);
             }
 
             //
             // locate the original skin pixels
             //
-            _CurrentEntity = Client.Entities[1 + playernum];
-            model_t model = _CurrentEntity.model;
+            _currentEntity = Client.Entities[1 + playernum];
+            model_t model = _currentEntity.Model;
             if (model == null)
                 return;		// player doesn't have a model yet
             if (model.type != modtype_t.mod_alias)
@@ -1465,27 +1462,27 @@ namespace Quarp
                 Sys.Error("R_TranslateSkin: s&3");
 
             byte[] original;
-            if (_CurrentEntity.skinnum < 0 || _CurrentEntity.skinnum >= paliashdr.numskins)
+            if (_currentEntity.Skinnum < 0 || _currentEntity.Skinnum >= paliashdr.numskins)
             {
-                Con.Print("({0}): Invalid player skin #{1}\n", playernum, _CurrentEntity.skinnum);
+                Con.Print("({0}): Invalid player skin #{1}\n", playernum, _currentEntity.Skinnum);
                 original = (byte[])paliashdr.texels[0];// (byte *)paliashdr + paliashdr.texels[0];
             }
             else
-                original = (byte[])paliashdr.texels[_CurrentEntity.skinnum];
+                original = (byte[])paliashdr.texels[_currentEntity.Skinnum];
 
             int inwidth = paliashdr.skinwidth;
             int inheight = paliashdr.skinheight;
 
             // because this happens during gameplay, do it fast
             // instead of sending it through gl_upload 8
-            Drawer.Bind(_PlayerTextures + playernum);
+            Drawer.Bind(_playerTextures + playernum);
 
-            int scaled_width = (int)(Drawer.glMaxSize < 512 ? Drawer.glMaxSize : 512);
-            int scaled_height = (int)(Drawer.glMaxSize < 256 ? Drawer.glMaxSize : 256);
+            int scaledWidth = (int)(Drawer.glMaxSize < 512 ? Drawer.glMaxSize : 512);
+            int scaledHeight = (int)(Drawer.glMaxSize < 256 ? Drawer.glMaxSize : 256);
 
             // allow users to crunch sizes down even more if they want
-            scaled_width >>= (int)_glPlayerMip.Value;
-            scaled_height >>= (int)_glPlayerMip.Value;
+            scaledWidth >>= (int)_glPlayerMip.Value;
+            scaledHeight >>= (int)_glPlayerMip.Value;
 
             uint fracstep, frac;
             int destOffset;
@@ -1496,12 +1493,12 @@ namespace Quarp
 
             uint[] dest = new uint[512 * 256];
             destOffset = 0;
-            fracstep = (uint)(inwidth * 0x10000 / scaled_width);
-            for (int i = 0; i < scaled_height; i++, destOffset += scaled_width)
+            fracstep = (uint)(inwidth * 0x10000 / scaledWidth);
+            for (int i = 0; i < scaledHeight; i++, destOffset += scaledWidth)
             {
-                int srcOffset = inwidth * (i * inheight / scaled_height);
+                int srcOffset = inwidth * (i * inheight / scaledHeight);
                 frac = fracstep >> 1;
-                for (int j = 0; j < scaled_width; j += 4)
+                for (int j = 0; j < scaledWidth; j += 4)
                 {
                     dest[destOffset + j] = translate32[original[srcOffset + (frac >> 16)]];
                     frac += fracstep;
@@ -1516,7 +1513,7 @@ namespace Quarp
             GCHandle handle = GCHandle.Alloc(dest, GCHandleType.Pinned);
             try
             {
-                GL.TexImage2D(TextureTarget.Texture2D, 0, Drawer.SolidFormat, scaled_width, scaled_height, 0,
+                GL.TexImage2D(TextureTarget.Texture2D, 0, Drawer.SolidFormat, scaledWidth, scaledHeight, 0,
                      PixelFormat.Rgba, PixelType.UnsignedByte, handle.AddrOfPinnedObject());
             }
             finally
@@ -1532,11 +1529,11 @@ namespace Quarp
         /// </summary>
         public static void DisableMultitexture() 
         {
-            if (_MTexEnabled)
+            if (_mTexEnabled)
             {
                 GL.Disable(EnableCap.Texture2D);
                 Drawer.SelectTexture(MTexTarget.TEXTURE0_SGIS);
-                _MTexEnabled = false;
+                _mTexEnabled = false;
             }
         }
 
@@ -1549,7 +1546,7 @@ namespace Quarp
             {
                 Drawer.SelectTexture(MTexTarget.TEXTURE1_SGIS);
                 GL.Enable(EnableCap.Texture2D);
-                _MTexEnabled = true;
+                _mTexEnabled = true;
             }
         }
 
@@ -1559,24 +1556,24 @@ namespace Quarp
         public static void NewMap()
         {
             for (int i = 0; i < 256; i++)
-                _LightStyleValue[i] = 264;		// normal light value
+                _lightStyleValue[i] = 264;		// normal light value
 
-            _WorldEntity.Clear();
-            _WorldEntity.model = Client.cl.worldmodel;
+            _worldEntity.Clear();
+            _worldEntity.Model = Client.cl.worldmodel;
 
             // clear out efrags in case the level hasn't been reloaded
             // FIXME: is this one short?
             for (int i = 0; i < Client.cl.worldmodel.numleafs; i++)
                 Client.cl.worldmodel.leafs[i].efrags = null;
 
-            _ViewLeaf = null;
+            _viewLeaf = null;
             ClearParticles();
 
             BuildLightMaps();
 
             // identify sky texture
-            _SkyTextureNum = -1;
-            _MirrorTextureNum = -1;
+            SkyTextureNum = -1;
+            _mirrorTextureNum = -1;
             model_t world = Client.cl.worldmodel;
             for (int i = 0; i < world.numtextures; i++)
             {
@@ -1585,9 +1582,9 @@ namespace Quarp
                 if (world.textures[i].name != null)
                 {
                     if (world.textures[i].name.StartsWith("sky"))
-                        _SkyTextureNum = i;
+                        SkyTextureNum = i;
                     if (world.textures[i].name.StartsWith("window02_1"))
-                        _MirrorTextureNum = i;
+                        _mirrorTextureNum = i;
                 }
                 world.textures[i].texturechain = null;
             }
@@ -1597,53 +1594,53 @@ namespace Quarp
         /// R_CullBox
         /// Returns true if the box is completely outside the frustom
         /// </summary>
-        static bool CullBox(ref Vector3 mins, ref Vector3 maxs)
+        private static bool CullBox(ref Vector3 mins, ref Vector3 maxs)
         {
             for (int i = 0; i < 4; i++)
             {
-                if (Mathlib.BoxOnPlaneSide(ref mins, ref maxs, _Frustum[i]) == 2)
+                if (Mathlib.BoxOnPlaneSide(ref mins, ref maxs, _frustum[i]) == 2)
                     return true;
             }
             return false;
         }
     }
 
-    
-    class efrag_t
+
+    internal class EfragT
     {
-	    public mleaf_t leaf;
-	    public efrag_t leafnext;
-	    public entity_t entity;
-	    public efrag_t entnext;
+	    public mleaf_t Leaf;
+	    public EfragT Leafnext;
+	    public EntityT Entity;
+	    public EfragT Entnext;
 
         public void Clear()
         {
-            this.leaf = null;
-            this.leafnext = null;
-            this.entity = null;
-            this.entnext = null;
+            this.Leaf = null;
+            this.Leafnext = null;
+            this.Entity = null;
+            this.Entnext = null;
         }
     } // efrag_t;
 
 
-    class entity_t
+    internal class EntityT
     {
-        public bool forcelink;		// model changed
-        public int update_type;
-        public entity_state_t baseline;		// to fill in defaults in updates
-        public double msgtime;		// time of last update
-        public Vector3[] msg_origins; //[2];	// last two updates (0 is newest)	
-        public Vector3 origin;
-        public Vector3[] msg_angles; //[2];	// last two updates (0 is newest)
-        public Vector3 angles;
-        public model_t model;			// NULL = no model
-        public efrag_t efrag;			// linked list of efrags
-        public int frame;
-        public float syncbase;		// for client-side animations
-        public byte[] colormap;
-        public int effects;		// light, particals, etc
-        public int skinnum;		// for Alias models
-        public int visframe;		// last frame this entity was
+        public bool Forcelink;		// model changed
+        public int UpdateType;
+        public entity_state_t Baseline;		// to fill in defaults in updates
+        public double Msgtime;		// time of last update
+        public Vector3[] MsgOrigins; //[2];	// last two updates (0 is newest)	
+        public Vector3 Origin;
+        public Vector3[] MsgAngles; //[2];	// last two updates (0 is newest)
+        public Vector3 Angles;
+        public model_t Model;			// NULL = no model
+        public EfragT Efrag;			// linked list of efrags
+        public int Frame;
+        public float Syncbase;		// for client-side animations
+        public byte[] Colormap;
+        public int Effects;		// light, particals, etc
+        public int Skinnum;		// for Alias models
+        public int Visframe;		// last frame this entity was
         //  found in an active leaf
 
         //interpolation
@@ -1660,61 +1657,61 @@ namespace Quarp
         public Vector3 Angles1 { get; set; } //vec3_t angles1;
         public Vector3 Angles2 { get; set; } //vec3_t angles2;
 
-        public int dlightframe;	// dynamic lighting
-        public int dlightbits;
+        public int Dlightframe;	// dynamic lighting
+        public int Dlightbits;
 
         // FIXME: could turn these into a union
-        public int trivial_accept;
-        public mnode_t topnode;		// for bmodels, first world node
+        public int TrivialAccept;
+        public mnode_t Topnode;		// for bmodels, first world node
         //  that splits bmodel, or NULL if
         //  not split
 
-        public entity_t()
+        public EntityT()
         {
-            msg_origins = new Vector3[2];
-            msg_angles = new Vector3[2];
+            MsgOrigins = new Vector3[2];
+            MsgAngles = new Vector3[2];
         }
 
         public void Clear()
         {
-            this.forcelink = false;
-            this.update_type = 0;
+            this.Forcelink = false;
+            this.UpdateType = 0;
 
-            this.baseline = entity_state_t.Empty;
+            this.Baseline = entity_state_t.Empty;
 
-            this.msgtime = 0;
-            this.msg_origins[0] = Vector3.Zero;
-            this.msg_origins[1] = Vector3.Zero;
+            this.Msgtime = 0;
+            this.MsgOrigins[0] = Vector3.Zero;
+            this.MsgOrigins[1] = Vector3.Zero;
 
-            this.origin = Vector3.Zero;
-            this.msg_angles[0] = Vector3.Zero;
-            this.msg_angles[1] = Vector3.Zero;
-            this.angles = Vector3.Zero;
-            this.model = null;
-            this.efrag = null;
-            this.frame = 0;
-            this.syncbase = 0;
-            this.colormap = null;
-            this.effects = 0;
-            this.skinnum = 0;
-            this.visframe = 0;
+            this.Origin = Vector3.Zero;
+            this.MsgAngles[0] = Vector3.Zero;
+            this.MsgAngles[1] = Vector3.Zero;
+            this.Angles = Vector3.Zero;
+            this.Model = null;
+            this.Efrag = null;
+            this.Frame = 0;
+            this.Syncbase = 0;
+            this.Colormap = null;
+            this.Effects = 0;
+            this.Skinnum = 0;
+            this.Visframe = 0;
 
-            this.dlightframe = 0;
-            this.dlightbits = 0;
+            this.Dlightframe = 0;
+            this.Dlightbits = 0;
 
-            this.trivial_accept = 0;
-            this.topnode = null;
+            this.TrivialAccept = 0;
+            this.Topnode = null;
 
         }
     } // entity_t;
 
     // !!! if this is changed, it must be changed in asm_draw.h too !!!
-    class refdef_t
+    internal class RefdefT
     {
-        public vrect_t vrect;				// subwindow in video for refresh
-        public Vector3 vieworg;
-        public Vector3 viewangles;
-        public float fov_x, fov_y;
+        public vrect_t Vrect;				// subwindow in video for refresh
+        public Vector3 Vieworg;
+        public Vector3 Viewangles;
+        public float FovX, FovY;
     } // refdef_t;
 
 }

@@ -51,7 +51,7 @@ namespace Quarp.Image
             if (width * height * 3 == result.Length)
                 return ExtendBpp(result, width * height);
             if (width * height * 4 == result.Length)
-                return ToUint(result);
+                return MoveChanels(result);
 
             throw new Exception($"{path} has bad bpp");
         }
@@ -73,8 +73,11 @@ namespace Quarp.Image
                 width = img.Width;
                 height = img.Height;
                 var result = new byte[width*height*4];
+
                 var bmp = img.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
                 Marshal.Copy(bmp.Scan0, result, 0, result.Length);
+                img.UnlockBits(bmp);
+
                 return result;
             }
         }
@@ -105,6 +108,26 @@ namespace Quarp.Image
             for (var i = 0; i < result.Length; ++i, j += 4)
             {
                 result[i] = BitConverter.ToUInt32(bitmap, j);
+            }
+
+            return result;
+        }
+
+        // GBRA -> RGBA o_O
+        private static uint[] MoveChanels(byte[] bitmap)
+        {
+            var result = new uint[bitmap.Length / 4];
+
+            var j = 0;
+            for (var i = 0; i < result.Length; ++i, j+=4)
+            {
+                result[i] = BitConverter.ToUInt32(new []
+                {
+                    bitmap[j+2],
+                    bitmap[j+1],
+                    bitmap[j],
+                    bitmap[j+3],
+                }, 0);
             }
 
             return result;

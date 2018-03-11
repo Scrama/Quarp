@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
 using System.Text;
 
 // cmd.h -- Command buffer and command execution
@@ -458,6 +459,24 @@ namespace Quarp
         public static void InsertText(string text)
         {
             _Buf.Insert(0, text);
+        }
+
+        public static void ProceedParams(string[] text)
+        {
+            foreach (var token in text)
+            {
+                if (string.IsNullOrEmpty(token) || token[0] == '-')
+                    continue;
+
+                if (token[0] == '+')
+                {
+                    InsertText("\n");
+                    _Buf.Append(token.Substring(1));
+                    continue;
+                }
+                _Buf.Append($" {token}");
+            }
+            _Buf.Append($"\n");
         }
 
         // Cbuf_Execute()

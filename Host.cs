@@ -243,6 +243,7 @@ namespace Quarp
 	        }
 
             Cbuf.InsertText("exec quake.rc\n");
+            Cbuf.ProceedParams(Params.argv);
 
             _IsInitialized = true;
 	

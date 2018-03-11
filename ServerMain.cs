@@ -970,6 +970,10 @@ namespace Quarp
             // serverflags are for cross level information (sigils)
             Progs.GlobalStruct.serverflags = svs.serverflags;
 
+            Render.Sky.Set("");
+            Render.SkyClouds.Set("1");
+            Render.SkyRotation.Set("0 0 0");
+
             Progs.LoadFromFile(sv.worldmodel.entities);
 
             sv.active = true;

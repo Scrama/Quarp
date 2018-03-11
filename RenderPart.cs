@@ -432,9 +432,9 @@ namespace Quarp
         public static void ParseParticleEffect()
         {
             Vector3 org = Net.Reader.ReadCoords();
-            Vector3 dir = new Vector3(Net.Reader.ReadChar() * ONE_OVER_16,
-                Net.Reader.ReadChar() * ONE_OVER_16,
-                Net.Reader.ReadChar() * ONE_OVER_16);
+            Vector3 dir = new Vector3(Net.Reader.ReadChar() * OneOver16,
+                Net.Reader.ReadChar() * OneOver16,
+                Net.Reader.ReadChar() * OneOver16);
             int count = Net.Reader.ReadByte();
             int color = Net.Reader.ReadByte();
 
@@ -557,7 +557,7 @@ namespace Quarp
         /// <summary>
         /// R_EntityParticles
         /// </summary>
-        public static void EntityParticles(entity_t ent)
+        public static void EntityParticles(EntityT ent)
         {
             float dist = 64;
 
@@ -592,7 +592,7 @@ namespace Quarp
                 p.color = 0x6f;
                 p.type = ptype_t.pt_explode;
 
-                p.org = ent.origin + Anorms.Values[i] * dist + forward * _BeamLength;
+                p.org = ent.Origin + Anorms.Values[i] * dist + forward * _BeamLength;
             }
         }
     }

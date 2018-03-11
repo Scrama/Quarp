@@ -49,9 +49,9 @@ namespace Quarp
         static client_static_t _Static = new client_static_t();
         static client_state_t _State = new client_state_t();
 
-        static efrag_t[] _EFrags = new efrag_t[MAX_EFRAGS]; // cl_efrags
-        static entity_t[] _Entities = new entity_t[QDef.MAX_EDICTS]; // cl_entities
-        static entity_t[] _StaticEntities = new entity_t[MAX_STATIC_ENTITIES]; // cl_static_entities
+        static EfragT[] _EFrags = new EfragT[MAX_EFRAGS]; // cl_efrags
+        static EntityT[] _Entities = new EntityT[QDef.MAX_EDICTS]; // cl_entities
+        static EntityT[] _StaticEntities = new EntityT[MAX_STATIC_ENTITIES]; // cl_static_entities
         static lightstyle_t[] _LightStyle = new lightstyle_t[QDef.MAX_LIGHTSTYLES]; // cl_lightstyle
         static dlight_t[] _DLights = new dlight_t[MAX_DLIGHTS]; // cl_dlights
 
@@ -76,7 +76,7 @@ namespace Quarp
         static Cvar _AngleSpeedKey;// = { "cl_anglespeedkey", "1.5" };
 
         public static int NumVisEdicts; // cl_numvisedicts
-        static entity_t[] _VisEdicts = new entity_t[MAX_VISEDICTS]; // cl_visedicts[MAX_VISEDICTS]
+        static EntityT[] _VisEdicts = new EntityT[MAX_VISEDICTS]; // cl_visedicts[MAX_VISEDICTS]
 
         
         public static client_static_t cls
@@ -87,7 +87,7 @@ namespace Quarp
         {
             get { return _State; }
         }
-        public static entity_t[] Entities
+        public static EntityT[] Entities
         {
             get { return _Entities; }
         }
@@ -95,7 +95,7 @@ namespace Quarp
         /// cl_entities[cl.viewentity]
         /// Player model (visible when out of body)
         /// </summary>
-        public static entity_t ViewEntity
+        public static EntityT ViewEntity
         {
             get { return _Entities[_State.viewentity]; }
         }
@@ -103,7 +103,7 @@ namespace Quarp
         /// cl.viewent
         /// Weapon model (only visible from inside body)
         /// </summary>
-        public static entity_t ViewEnt
+        public static EntityT ViewEnt
         {
             get { return _State.viewent; }
         }
@@ -127,7 +127,7 @@ namespace Quarp
         {
             get { return _LightStyle; }
         }
-        public static entity_t[] VisEdicts
+        public static EntityT[] VisEdicts
         {
             get { return _VisEdicts; }
         }
@@ -378,10 +378,10 @@ namespace Quarp
 
         // refresh related state
         public model_t worldmodel;	// cl_entitites[0].model
-        public efrag_t free_efrags; // first free efrag in list
+        public EfragT free_efrags; // first free efrag in list
         public int num_entities;	// held in cl_entities array
         public int num_statics;	// held in cl_staticentities array
-        public entity_t viewent;			// the gun model
+        public EntityT viewent;			// the gun model
 
         public int cdtrack, looptrack;	// cd audio
 
@@ -406,7 +406,7 @@ namespace Quarp
             this.mtime = new double[2];
             this.model_precache = new model_t[QDef.MAX_MODELS];
             this.sound_precache = new sfx_t[QDef.MAX_SOUNDS];
-            this.viewent = new entity_t();
+            this.viewent = new EntityT();
         }
 
         public bool HasItems(int item)

@@ -706,6 +706,9 @@ namespace Quarp
         public string_t noise1;
         public string_t noise2;
         public string_t noise3;
+        public string_t sky;
+        public string_t sky_rotation;
+        public string_t sky_clouds;
 
         public static int SizeInBytes = Marshal.SizeOf(typeof(entvars_t));
     } // entvars_t;

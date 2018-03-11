@@ -43,7 +43,7 @@ namespace Quarp
             if (_glFlashBlend.Value != 0)
                 return;
 
-            _DlightFrameCount = _FrameCount + 1;	// because the count hasn't advanced yet for this frame
+            _DlightFrameCount = _frameCount + 1;	// because the count hasn't advanced yet for this frame
 
             for (int i = 0; i < Client.MAX_DLIGHTS; i++)
             {
@@ -104,7 +104,7 @@ namespace Quarp
             if (_glFlashBlend.Value == 0)
                 return;
 
-            _DlightFrameCount = _FrameCount + 1;	// because the count hasn't advanced yet for this frame
+            _DlightFrameCount = _frameCount + 1;	// because the count hasn't advanced yet for this frame
 
             GL.DepthMask(false);
             GL.Disable(EnableCap.Texture2D);
@@ -141,14 +141,14 @@ namespace Quarp
             {
                 if (String.IsNullOrEmpty(Client.LightStyle[j].map))
                 {
-                    _LightStyleValue[j] = 256;
+                    _lightStyleValue[j] = 256;
                     continue;
                 }
                 string map = Client.LightStyle[j].map;
                 int k = i % map.Length;
                 k = map[k] - 'a';
                 k = k * 22;
-                _LightStyleValue[j] = k;
+                _lightStyleValue[j] = k;
             }
         }
 
@@ -201,7 +201,7 @@ namespace Quarp
                 return -1;		// didn't hit anuthing
 
             // check for impact on this node
-            _LightSpot = mid;
+            _lightSpot = mid;
             _LightPlane = plane;
 
             msurface_t[] surf = Client.cl.worldmodel.surfaces;
@@ -241,7 +241,7 @@ namespace Quarp
 
                     for (int maps = 0; maps < BspFile.MAXLIGHTMAPS && surf[offset].styles[maps] != 255; maps++)
                     {
-                        int scale = _LightStyleValue[surf[offset].styles[maps]];
+                        int scale = _lightStyleValue[surf[offset].styles[maps]];
                         r += lightmap[lmOffset] * scale;
                         lmOffset += ((extents[0] >> 4) + 1) * ((extents[1] >> 4) + 1);
                     }
